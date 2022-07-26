@@ -1,0 +1,2 @@
+defmodule MyEnum do
+end
