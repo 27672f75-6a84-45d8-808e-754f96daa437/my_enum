@@ -30,11 +30,11 @@ defmodule MyEnumTest do
 
   describe "MyEnum.all?/2 tests" do
     test "모든 요소가 주어진 함수에 대해서 true일때 true를 반환한다." do
-      assert MyEnum.all?([1,2,3], fn x -> x > 0 end)
+      assert MyEnum.all?([1, 2, 3], fn x -> x > 0 end)
     end
 
     test "모든 요소중 하나라도 주어진 함수에 대해서 false라면 false를 반환한다." do
-      assert false == MyEnum.all?([1,-1,3], fn x -> x == 0 end)
+      assert false == MyEnum.all?([1, -1, 3], fn x -> x == 0 end)
     end
   end
 
@@ -62,11 +62,11 @@ defmodule MyEnumTest do
 
   describe "MyEnum.any?/2 tests" do
     test "모든 요소가 주어진 함수에 대해서 false일때 false를 반환한다." do
-      assert false == MyEnum.any?([1,false,nil], fn x -> x == 0 end)
+      assert false == MyEnum.any?([1, false, nil], fn x -> x == 0 end)
     end
 
     test "모든 요소중 하나라도 주어진 함수에 대해서 true라면 true를 반환한다." do
-      assert MyEnum.any?([2,4,6], &(rem(&1, 2) == 0))
+      assert MyEnum.any?([2, 4, 6], &(rem(&1, 2) == 0))
     end
   end
 end

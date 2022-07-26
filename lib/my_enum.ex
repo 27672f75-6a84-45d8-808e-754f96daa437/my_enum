@@ -1,5 +1,5 @@
 defmodule MyEnum do
-    @doc """
+  @doc """
     Enum.all?/1 함수를 직접 구현해보자.
     리스트가 [] 빈 리스트일 경우에는 true를 반환한다.
     요소중 false 나 nil이 있으면 false를 반환한다.
