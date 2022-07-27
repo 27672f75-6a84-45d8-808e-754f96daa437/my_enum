@@ -91,4 +91,16 @@ defmodule MyEnumTest do
       assert nil == MyEnum.at([1, 2, 3], -4)
     end
   end
+
+  describe "MyEnum.reverse/1 tests" do
+    test "주어진 리스트를 반대로 뒤집는다." do
+      assert [3, 2, 1] == MyEnum.reverse([1, 2, 3])
+    end
+  end
+
+  describe "MyEnum.reverse/2 tests" do
+    test "주어진 리스트를 반대로 뒤집고 tail있다면 뒤집은 리스트에 붙여 반환한다." do
+      assert [3, 2, 1, 4, 5, 6] == MyEnum.reverse([1, 2, 3], [4, 5, 6])
+    end
+  end
 end

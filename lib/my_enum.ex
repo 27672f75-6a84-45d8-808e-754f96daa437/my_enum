@@ -63,7 +63,15 @@ defmodule MyEnum do
   defp at(list, index, default, depth) when index < depth,
     do: at(reverse(list), index * -1 - 1, default, depth)
 
-  def reverse([h | t]), do: reverse(t, [h])
-  defp reverse([h | t], arg), do: reverse(t, [h] ++ arg)
-  defp reverse([], arg), do: arg
+  @doc """
+    Enum.reverse/1 , Enum.reverse/2 함수를 직접 구현해보자.
+    Enum.reverse/1는 주어진 리스트를 뒤집어 반환합니다.
+    ex) Enum.reverse([1, 2, 3]) => [3, 2, 1]
+    Enum.reverse/2는 주어진 리스트를 뒤집고 뒤집어진 리스트에 tail을 붙여 반환합니다.
+    ex) Enum.reverse([1, 2, 3],[4, 5, 6]) => [3, 2, 1, 4, 5, 6]
+  """
+
+  def reverse([h | t], tail \\ []), do: reverse(t, [h], tail)
+  defp reverse([h | t], arg, tail), do: reverse(t, [h] ++ arg, tail)
+  defp reverse([], arg, tail), do: arg ++ tail
 end
