@@ -69,4 +69,38 @@ defmodule MyEnumTest do
       assert MyEnum.any?([2, 4, 6], &(rem(&1, 2) == 0))
     end
   end
+
+  describe "MyEnum.at/3 tests" do
+    test "리스트에서 해당하는 인덱스에 요소가 있는지 확인한다." do
+      assert MyEnum.at([1, 2, 3], 1)
+    end
+
+    test "리스트에서 해당하는 인덱스에 요소가 있는지 확인한다. 없다면 기본값인 default \\ nil를 반환한다." do
+      assert nil == MyEnum.at([1, 2, 3], 4)
+    end
+
+    test "리스트에서 해당하는 인덱스에 요소가 있는지 확인한다. 없다면 주어진 default값을 반환한다." do
+      assert false == MyEnum.at([1, 2, 3], 4, false)
+    end
+
+    test "리스트에서 인덱스가 음수로 주어질때 리스트의 뒤에서부터 차례로 요소가 있는지 확인한다." do
+      assert MyEnum.at([1, 2, 3], -2)
+    end
+
+    test "리스트에서 인덱스가 음수로 주어질때 리스트의 뒤에서부터 차례로 요소가 있는지 확인한다. 없다면 역시 기본값인 default \\ nil를 반환한다." do
+      assert nil == MyEnum.at([1, 2, 3], -4)
+    end
+  end
+
+  describe "MyEnum.reverse/1 tests" do
+    test "주어진 리스트를 반대로 뒤집는다." do
+      assert [3, 2, 1] == MyEnum.reverse([1, 2, 3])
+    end
+  end
+
+  describe "MyEnum.reverse/2 tests" do
+    test "주어진 리스트를 반대로 뒤집고 tail있다면 뒤집은 리스트에 붙여 반환한다." do
+      assert [3, 2, 1, 4, 5, 6] == MyEnum.reverse([1, 2, 3], [4, 5, 6])
+    end
+  end
 end
