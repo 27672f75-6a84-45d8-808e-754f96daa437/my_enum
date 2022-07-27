@@ -72,6 +72,6 @@ defmodule MyEnum do
   """
 
   def reverse([h | t], tail \\ []), do: reverse(t, [h], tail)
-  defp reverse([h | t], arg, tail), do: reverse(t, [h] ++ arg, tail)
+  defp reverse([h | t], arg, tail), do: reverse(t, [h | arg], tail)
   defp reverse([], arg, tail), do: arg ++ tail
 end
