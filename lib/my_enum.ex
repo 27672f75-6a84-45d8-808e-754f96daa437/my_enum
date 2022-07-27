@@ -43,4 +43,27 @@ defmodule MyEnum do
   defp any?([_ | _], _, true), do: true
   defp any?([], _, false), do: false
   defp any?([h | t], function, false), do: any?(t, function, function.(h))
+
+  @doc """
+    Enum.at/3 함수를 직접 구현해보자.
+    index (zero-based)가 가르키는곳에 요소가 존재하는지 찾아주는 함수
+    해당 인덱스에 요소가 없으면 default 값을 반환하는데 defalut 값을 설정하지 않으면 nil을 반환합니다.
+    index를 음수로 입력하면 enumrable의 마지막부터 요소를 찾아갑니다.
+    ex) Enum.at([1,2,3], -1) => 3을 반환.
+    요소가 []일 경우에는 default를 반환합니다.
+  """
+  def at(list, index, default \\ nil) do
+    at(list, index, default, 0)
+  end
+
+  defp at([], _, default, _), do: default
+  defp at([h | _], index, _, depth) when index == depth, do: h
+  defp at([_ | t], index, default, depth) when index > depth, do: at(t, index, default, depth + 1)
+
+  defp at(list, index, default, depth) when index < depth,
+    do: at(reverse(list), index * -1 - 1, default, depth)
+
+  def reverse([h | t]), do: reverse(t, [h])
+  defp reverse([h | t], arg), do: reverse(t, [h] ++ arg)
+  defp reverse([], arg), do: arg
 end
