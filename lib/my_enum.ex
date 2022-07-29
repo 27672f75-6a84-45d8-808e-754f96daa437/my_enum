@@ -86,4 +86,13 @@ defmodule MyEnum do
   def flatten([], _), do: []
   def flatten([h | t], added_list), do: flatten(h) ++ flatten(t) ++ added_list
   def flatten(arg, []), do: [arg]
+
+  @doc """
+    Enum.concat/1 주어진 리스트의 요소들이 열거 가능한 요소들일 때 하나의 리스트로 요소들을 합친다.
+    Enum.concat/2 주어진 열거 가능한 요소를 앞서 만든 리스트에 같이 합친다.
+    ex ) [[1,[2],3], [4], [5,6]] => [1,[2],3,4,5,6]
+  """
+  def concat(list, enumerable \\ [])
+  def concat([h | t], enumerable), do: h ++ concat(t) ++ enumerable
+  def concat([], _), do: []
 end

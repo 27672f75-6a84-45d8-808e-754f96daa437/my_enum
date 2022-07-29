@@ -116,4 +116,18 @@ defmodule MyEnumTest do
                MyEnum.flatten([1, [2, 3], [4, [5, 6, [[[[[[[7]]]]]]]]]], [8, [9], 10])
     end
   end
+
+  describe "MyEnum.concat/1 tests" do
+    test "주어진 리스트의 요소가 열거 가능한 요소일때 하나의 리스트로 요소들을 합친다." do
+      assert [1, [2], [3], 4, 5, 6] ==
+               MyEnum.concat([[1, [2], [3]], [4], [5, 6]])
+    end
+  end
+
+  describe "MyEnum.concat/2 tests" do
+    test "주어진 리스트의 요소가 열거 가능한 요소일때 하나의 리스트로 요소들을 합치고 제공된 열거가능한 리스트가 있다면 같이 합친다.." do
+      assert [1, [2], [3], 4, 5, 6, 7, [8], 9] ==
+               MyEnum.concat([[1, [2], [3]], [4], [5, 6]], [7, [8], 9])
+    end
+  end
 end
