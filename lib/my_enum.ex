@@ -82,11 +82,8 @@ defmodule MyEnum do
     List.flatten/2는 주어진 list에서 요소의 중첩목록을 없애 평탄화 작업을 한 이후에 tail을 붙여 반환한다.
   """
 
-  def flatten([]), do: []
-  def flatten([h | t]), do: flatten(h) ++ flatten(t)
-  def flatten(arg), do: [arg]
-
-  def flatten([], added_list), do: [] ++ added_list
+  def flatten(list, added_list \\ [])
+  def flatten([], _), do: []
   def flatten([h | t], added_list), do: flatten(h, []) ++ flatten(t, []) ++ added_list
   def flatten(arg, []), do: [arg]
 end
