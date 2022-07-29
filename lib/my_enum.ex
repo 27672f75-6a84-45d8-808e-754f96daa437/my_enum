@@ -74,4 +74,16 @@ defmodule MyEnum do
   def reverse([h | t], tail \\ []), do: reverse(t, [h], tail)
   defp reverse([h | t], arg, tail), do: reverse(t, [h | arg], tail)
   defp reverse([], arg, tail), do: arg ++ tail
+
+  @doc """
+    List.flatten/1, List.flatten/2 함수를 직접 구현해보자.
+    List.flatten/1는 주어진 list에서 요소의 중첩목록을 없애 평탄화 한다.
+    [] 빈 리스트의 경우는 삭제한다.
+    List.flatten/2는 주어진 list에서 요소의 중첩목록을 없애 평탄화 작업을 한 이후에 tail을 붙여 반환한다.
+  """
+
+  def flatten(list, added_list \\ [])
+  def flatten([], _), do: []
+  def flatten([h | t], added_list), do: flatten(h) ++ flatten(t) ++ added_list
+  def flatten(arg, []), do: [arg]
 end

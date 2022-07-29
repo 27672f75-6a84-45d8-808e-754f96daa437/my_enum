@@ -103,4 +103,17 @@ defmodule MyEnumTest do
       assert [3, 2, 1, 4, 5, 6] == MyEnum.reverse([1, 2, 3], [4, 5, 6])
     end
   end
+
+  describe "MyEnum.flatten/1 tests" do
+    test "주어진 리스트의 요소의 중첩목록을 없애 평탄화를 한다." do
+      assert [1, 2, 3, 4, 5, 6, 7] == MyEnum.flatten([1, [2, 3], [4, [5, 6, [[[[[[[7]]]]]]]]]])
+    end
+  end
+
+  describe "MyEnum.flatten/2 tests" do
+    test "주어진 리스트의 요소의 중첩목록을 없애 평탄화를하고 그 뒤에 제공한 리스트를 붙인다." do
+      assert [1, 2, 3, 4, 5, 6, 7, 8, [9], 10] ==
+               MyEnum.flatten([1, [2, 3], [4, [5, 6, [[[[[[[7]]]]]]]]]], [8, [9], 10])
+    end
+  end
 end
