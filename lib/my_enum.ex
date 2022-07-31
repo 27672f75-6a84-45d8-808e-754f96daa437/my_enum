@@ -100,7 +100,10 @@ defmodule MyEnum do
     Enum.count/1 주어진 리스트의 크기를 반환합니다.
     Enum.count/2 주어진 리스트의 요소중 제공한 함수를 만족하는 요소의 개수를 반환합니다.
   """
-  def count([h | t], fun \\ fn _ -> true end), do: count(t, 0, fun, fun.(h))
+  def count(list, fun \\ fn _ -> true end)
+  def count([], _), do: 0
+  def count([h | t], fun), do: count(t, 0, fun, fun.(h))
+
   defp count([], count, _, true), do: count + 1
   defp count([], count, _, false), do: count
   defp count([h | t], count, fun, true), do: count(t, count + 1, fun, fun.(h))
@@ -114,6 +117,7 @@ defmodule MyEnum do
 
   def count_until(list, limit, function \\ fn _ -> true end)
   def count_until([], _, _), do: 0
+  def count_until(_, 0, _), do: false
 
   def count_until([h | t], limit, function),
     do: count_until(t, limit, 0, limit <= 0, function.(h), function)

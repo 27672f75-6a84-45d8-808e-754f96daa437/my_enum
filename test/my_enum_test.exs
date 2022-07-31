@@ -135,15 +135,33 @@ defmodule MyEnumTest do
     test "주어진 리스트의 요소 개수를 반환한다." do
       assert MyEnum.count([1, 2, 3])
     end
+
+    test "주어진 리스트가 비어있다면 0 을 반환한다." do
+      assert 0 == MyEnum.count([])
+    end
   end
 
   describe "MyEnum.count?/2 tests" do
     test "주어진 리스트에서 제공한 함수를 만족하는 요소의 개수를 반환한다." do
       assert MyEnum.count([1, 2, 3], fn x -> x > 2 end)
     end
+
+    test "주어진 리스트가 비어있다면 0 을 반환한다." do
+      assert 0 == MyEnum.count([], fn x -> x > 0 end)
+    end
   end
 
   describe "MyEnum.count_until?/2 tests" do
+    test "제공한 limit 가 0이라면 함수를 실행하지 못한다." do
+      limit = 0
+      assert false == MyEnum.count_until([1, 2, 2, 2, 2, 3], limit, fn x -> x == 2 end)
+    end
+
+    test "제공한 리스트가 비어있다면 0을 반환한다." do
+      limit = 5
+      assert 0 == MyEnum.count_until([], limit)
+    end
+
     test "주어진 리스트의 요소 개수가 적어도 주어진 limit 개수만큼 만족하는지를 확인한다. 확인 도중 이미 주어진 limit 개수를 만족하면 limit 개수를 반환한다." do
       limit = 2
       assert limit == MyEnum.count_until([1, 2, 3, 4, 5], limit)
@@ -157,12 +175,22 @@ defmodule MyEnumTest do
   end
 
   describe "MyEnum.count_until?/3 tests" do
-    test "주어진 리스트에서 제공한 함수를 만족하는 요소의 개수가 주어진 limit 개수만큼 만족하는지를 확인한다. 확인 도중 이미 주어진 limit 개수를 만족하면 limit 개수를 반환한다." do
+    test "제공한 limit 가 0이라면 함수를 실행하지 못한다." do
+      limit = 0
+      assert false == MyEnum.count_until([1, 2, 2, 2, 2, 3], limit, fn x -> x == 2 end)
+    end
+
+    test "제공한 리스트가 비어있다면 0을 반환한다." do
+      limit = 20
+      assert 0 == MyEnum.count_until([], limit, fn x -> x == 2 end)
+    end
+
+    test "제공한 함수를 만족하는 요소의 개수가 주어진 limit 개수만큼 만족하는지를 확인한다. 확인 도중 이미 주어진 limit 개수를 만족하면 limit 개수를 반환한다." do
       limit = 2
       assert 2 == MyEnum.count_until([1, 2, 2, 2, 2, 3], limit, fn x -> x == 2 end)
     end
 
-    test "주어진 리스트에서 제공한 함수를 만족하는 요소의 개수가 주어진 limit 개수만큼 만족하는지를 확인한다.  만족하지 못하면 리스트 요소의 개수를 반환한다." do
+    test "제공한 함수를 만족하는 요소의 개수가 주어진 limit 개수만큼 만족하는지를 확인한다. 만족하지 못하면 리스트 요소의 개수를 반환한다." do
       limit = 50
       assert 4 == MyEnum.count_until([1, 2, 2, 2, 2, 3], limit, fn x -> x == 2 end)
     end
