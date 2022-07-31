@@ -71,7 +71,9 @@ defmodule MyEnum do
     ex) Enum.reverse([1, 2, 3],[4, 5, 6]) => [3, 2, 1, 4, 5, 6]
   """
 
-  def reverse([h | t], tail \\ []), do: reverse(t, [h], tail)
+  def reverse(list, tail \\ [])
+  def reverse([h | t], tail), do: reverse(t, [h], tail)
+  def reverse([], _tail), do: []
   defp reverse([h | t], arg, tail), do: reverse(t, [h | arg], tail)
   defp reverse([], arg, tail), do: arg ++ tail
 
@@ -170,4 +172,63 @@ defmodule MyEnum do
   end
 
   defp dedup_by(_list, _function, _arg, result), do: result
+
+  @doc """
+    Enum.drop/2 리스트에서 amount만큼 차례로 요소를 삭제해 나갑니다.
+    음수 amount가 주어지면 리스트의 마지막 요소부터 삭제해 나갑니다.
+  """
+
+  def drop([], _amount), do: []
+  def drop(list, amount) when amount >= 0, do: drop(list, amount, 0, amount - 0 <= 0, true)
+
+  def drop(list, amount) when amount < 0,
+    do: drop(MyEnum.reverse(list), -amount, 0, -amount - 0 <= 0, false)
+
+  defp drop([], _amount, _depth, false, _is_positive_amount), do: []
+
+  defp drop([_ | t], amount, depth, false, is_positive_amount),
+    do: drop(t, amount, depth + 1, amount - (depth + 1) <= 0, is_positive_amount)
+
+  defp drop(list, _, _depth, true, is_positive_amount) do
+    case is_positive_amount do
+      true -> list
+      false -> MyEnum.reverse(list)
+    end
+  end
+
+  @doc """
+    Enum.drop_every/2 리스트에서 주어진 nth 간격으로 요소를 삭제해 나갑니다.
+    맨처음 요소는 항상 삭제되며 주어지는 nth는 음수 값이 될 수 없습니다.
+  """
+
+  def drop_every([], _), do: []
+  def drop_every(_list, 1), do: []
+  def drop_every(_list, nth) when nth < 0, do: []
+  def drop_every(list, 0), do: list
+  def drop_every([_ | t], nth), do: drop_every(t, nth, 1, [])
+
+  defp drop_every([h | t], nth, depth, result) do
+    case nth - depth == 0 do
+      true -> drop_every(t, nth, 1, result)
+      false -> drop_every(t, nth, depth + 1, result ++ [h])
+    end
+  end
+
+  defp drop_every([], _nth, _depth, result), do: result
+
+  @doc """
+    Enum.drop_while/2 리스트에서 함수에 만족하는 요소를 삭제해 나갑니다.
+  """
+
+  def drop_while([], _), do: []
+  def drop_while(list, function), do: drop_while(list, function, [])
+
+  defp drop_while([], _function, result), do: result
+
+  defp drop_while([h | t], function, result) do
+    case function.(h) do
+      true -> drop_while(t, function, result)
+      false -> drop_while(t, function, result ++ [h])
+    end
+  end
 end
