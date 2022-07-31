@@ -197,30 +197,30 @@ defmodule MyEnumTest do
   end
 
   describe "MyEnum.dedup/1 tests" do
-    test "제공한 리스트가 비어있다면 0을 반환한다." do
+    test "제공한 리스트가 비어있다면 []을 반환한다." do
       assert [] == MyEnum.dedup([])
     end
 
-    test "리스트에서 요소중 중복된 요소를 하나로 만든다." do
+    test "리스트에서 나열된 요소중 중복된 요소를 나열되지 않게 하나로 만든다." do
       assert [1, 2, 3, 2, 1] == MyEnum.dedup([1, 2, 3, 3, 2, 1])
     end
 
-    test "리스트에서 요소중 중복된 요소를 하나로 만든다. 모든 타입 가능" do
+    test "리스트에서 나열된 요소중 중복된 요소를 나열되지 않게 하나로 만든다. 모든 타입 가능" do
       assert [1, 2, 2.0, :three] == MyEnum.dedup([1, 1, 2, 2.0, :three, :three])
     end
   end
 
   describe "MyEnum.dedup_by/2 tests" do
-    test "제공한 리스트가 비어있다면 0을 반환한다." do
+    test "제공한 리스트가 비어있다면 []을 반환한다." do
       assert [] == MyEnum.dedup_by([], fn _ -> true end)
     end
 
-    test "리스트에서 주어진 함수를 거쳐 중복되는 요소를 하나로 만듬." do
+    test "리스트에서 주어진 함수를 거쳐 나열된 요소 중 중복되는 요소를 하나로 만듬." do
       assert [{1, :a}, {2, :b}, {1, :a}] ==
                MyEnum.dedup_by([{1, :a}, {2, :b}, {2, :c}, {1, :a}], fn {x, _} -> x end)
     end
 
-    test "리스트에서 주어진 함수를 거쳐 중복되는 요소를 하나로 만듬2." do
+    test "리스트에서 주어진 함수를 거쳐  나열된 요소 중 중복되는 요소를 하나로 만듬2." do
       assert [5, 1, 3, 2] == MyEnum.dedup_by([5, 1, 2, 3, 2, 1], fn x -> x > 2 end)
     end
   end
