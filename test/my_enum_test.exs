@@ -154,7 +154,7 @@ defmodule MyEnumTest do
   describe "MyEnum.count_until?/2 tests" do
     test "제공한 limit 가 0이라면 함수를 실행하지 못한다." do
       limit = 0
-      assert false == MyEnum.count_until([1, 2, 2, 2, 2, 3], limit, fn x -> x == 2 end)
+      assert 0 == MyEnum.count_until([1, 2, 2, 2, 2, 3], limit, fn x -> x == 2 end)
     end
 
     test "제공한 리스트가 비어있다면 0을 반환한다." do
@@ -177,7 +177,7 @@ defmodule MyEnumTest do
   describe "MyEnum.count_until?/3 tests" do
     test "제공한 limit 가 0이라면 함수를 실행하지 못한다." do
       limit = 0
-      assert false == MyEnum.count_until([1, 2, 2, 2, 2, 3], limit, fn x -> x == 2 end)
+      assert 0 == MyEnum.count_until([1, 2, 2, 2, 2, 3], limit, fn x -> x == 2 end)
     end
 
     test "제공한 리스트가 비어있다면 0을 반환한다." do
