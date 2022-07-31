@@ -131,4 +131,43 @@ defmodule MyEnum do
   end
 
   defp count_until(_list, _limit, count, _function), do: count
+
+  @doc """
+    Enum.dedup/1 리스트에서 순서대로 중복되어 연속된 요소가 있을 시 중복된 요소를 하나로 축소시키는 함수
+  """
+
+  def dedup([h | t]), do: dedup(t, [h], h)
+  def dedup(_list), do: []
+
+  # 1. 패턴 매칭을 통한 구현
+  defp dedup([h | t], result, arg), do: dedup(t, result, h, h === arg)
+  defp dedup([h | t], result, arg, true), do: dedup(t, result, h, h === arg)
+  defp dedup([h | t], result, arg, false), do: dedup(t, result ++ [arg], h, h === arg)
+  defp dedup(_list, result, _arg, true), do: result
+  defp dedup(_list, result, arg, false), do: result ++ [arg]
+
+  # 2. case를 사용한 구현
+  # defp dedup([h|t], result, arg) do
+  #   case h === arg do
+  #     true -> dedup(t,result,h)
+  #     false -> dedup(t, result ++ [h], h)
+  #   end
+  # end
+  # defp dedup(_list, result,_arg), do: result
+
+  @doc """
+    Enum.dedup_by/2 리스트에서 주어진 함수를 만족하는 요소가 반복되어 나열됐을 때 반복된 요소를 함수를 처음 만족한 요소 하나로 축소시키는 함수
+  """
+
+  def dedup_by([h | t], function), do: dedup_by(t, function, h, [h])
+  def dedup_by(_list, _function), do: []
+
+  defp dedup_by([h | t], function, arg, result) do
+    case function.(h) === function.(arg) do
+      true -> dedup_by(t, function, h, result)
+      false -> dedup_by(t, function, h, result ++ [h])
+    end
+  end
+
+  defp dedup_by(_list, _function, _arg, result), do: result
 end
