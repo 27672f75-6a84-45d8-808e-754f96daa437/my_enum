@@ -95,4 +95,40 @@ defmodule MyEnum do
   def concat(list, enumerable \\ [])
   def concat([h | t], enumerable), do: h ++ concat(t) ++ enumerable
   def concat([], _), do: []
+
+  @doc """
+    Enum.count/1 주어진 리스트의 크기를 반환합니다.
+    Enum.count/2 주어진 리스트의 요소중 제공한 함수를 만족하는 요소의 개수를 반환합니다.
+  """
+  def count(list, fun \\ fn _ -> true end) do
+    count(list, fun, 0)
+  end
+
+  defp count([h | t], fun, count) do
+    case fun.(h) do
+      true -> count(t, fun, count + 1)
+      false -> count(t, fun, count)
+    end
+  end
+
+  defp count(_list, _fun, count), do: count
+
+  @doc """
+    Enum.count_until/2 주어진 리스트의 갯수가 적어도 limit 또는 limit 값 이상인지 확인할 때 사용한다.
+    Enum.count_until/3 주어진 리스트의 요소중 제공한 함수를 만족하는 요소의 개수가 적어도 limit 또는 limit값 이상인지 확인할 때 사용한다.
+    limit은 0이 될 수 없다.
+  """
+
+  def count_until(list, limit, function \\ fn _ -> true end) do
+    count_until(list, limit, 0, function)
+  end
+
+  defp count_until([h | t], limit, count, function) when limit > count do
+    case function.(h) do
+      true -> count_until(t, limit, count + 1, function)
+      false -> count_until(t, limit, count, function)
+    end
+  end
+
+  defp count_until(_list, _limit, count, _function), do: count
 end
