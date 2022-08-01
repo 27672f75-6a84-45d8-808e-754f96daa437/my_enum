@@ -96,11 +96,23 @@ defmodule MyEnumTest do
     test "주어진 리스트를 반대로 뒤집는다." do
       assert [3, 2, 1] == MyEnum.reverse([1, 2, 3])
     end
+
+    test "주어진 리스트가 비어있다면 []를 반환한다." do
+      assert [] == MyEnum.reverse([])
+    end
   end
 
   describe "MyEnum.reverse/2 tests" do
     test "주어진 리스트를 반대로 뒤집고 tail있다면 뒤집은 리스트에 붙여 반환한다." do
       assert [3, 2, 1, 4, 5, 6] == MyEnum.reverse([1, 2, 3], [4, 5, 6])
+    end
+
+    test "주어진 리스트가 [] 이고 tail있다면 tail만 반환한다." do
+      assert [4, 5, 6] == MyEnum.reverse([], [4, 5, 6])
+    end
+
+    test "주어진 리스트가 [] 이고 tail도 []라면 []를 반환한다." do
+      assert [] == MyEnum.reverse([], [])
     end
   end
 
@@ -222,6 +234,69 @@ defmodule MyEnumTest do
 
     test "리스트에서 주어진 함수를 거쳐  나열된 요소 중 중복되는 요소를 하나로 만듬2." do
       assert [5, 1, 3, 2] == MyEnum.dedup_by([5, 1, 2, 3, 2, 1], fn x -> x > 2 end)
+    end
+  end
+
+  describe "MyEnum.drop/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.drop([], 30)
+    end
+
+    test "주어진 amount 만큼 리스트의 요소를 삭제해 나갑니다." do
+      assert [4, 5] == MyEnum.drop([1, 2, 3, 4, 5], 3)
+    end
+
+    test "주어진 리스트의 크기보다 amount가 크다면 []를 반환합니다." do
+      assert [] == MyEnum.drop([1, 2, 3, 4, 5], 10)
+    end
+
+    test "주어진 amount가 음수라면 뒤에서 amount 만큼 리스트의 요소를 삭제해 나갑니다." do
+      assert [1, 2, 3] == MyEnum.drop([1, 2, 3, 4, 5], -2)
+    end
+
+    test "주어진 amount가 음수이면서 리스트의 크기보다 amount의 절대값이 크면 []를 반환합니다." do
+      assert [] == MyEnum.drop([1, 2, 3, 4, 5], -30)
+    end
+  end
+
+  describe "MyEnum.drop_every/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.drop_every([], 30)
+    end
+
+    test "주어진 nth는 음수값이 될 수 없습니다. 임시로 []를 반환합니다." do
+      assert [] == MyEnum.drop_every([1, 2, 3, 4, 5], -3)
+    end
+
+    test "주어진 nth의 간격으로 리스트의 요소를 제거해 나갑니다." do
+      assert [2, 4, 6, 8, 10] == MyEnum.drop_every([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2)
+    end
+
+    test "주어진 nth가 0이라면 리스트를 그대로 반환합니다." do
+      assert [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] ==
+               MyEnum.drop_every([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0)
+    end
+
+    test "주어진 nth가 1이라면 간격이 1이라 요소가 모두 삭제되므로 []를 반환합니다." do
+      assert [] == MyEnum.drop_every([1, 2, 3, 4, 5], 1)
+    end
+  end
+
+  describe "MyEnum.drop_while/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.drop_while([], fn x -> x == 0 end)
+    end
+
+    test "함수를 만족하는 요소를 모두 제거합니다." do
+      assert [] == MyEnum.drop_while([1, 2, 3, 4, 5], fn x -> x > 0 end)
+    end
+
+    test "함수를 만족하는 요소를 모두 제거합니다. 2" do
+      assert [1, 3, 5] == MyEnum.drop_while([1, 2, 3, 4, 5], fn x -> rem(x, 2) == 0 end)
+    end
+
+    test "함수를 만족하지 못하는 요소는 제거되지 않습니다." do
+      assert [1, 2, 3, 4, 5] == MyEnum.drop_while([1, 2, 3, 4, 5], fn _ -> false end)
     end
   end
 end
