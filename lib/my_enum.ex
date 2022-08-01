@@ -71,12 +71,9 @@ defmodule MyEnum do
     ex) Enum.reverse([1, 2, 3],[4, 5, 6]) => [3, 2, 1, 4, 5, 6]
   """
 
-  def reverse(list, tail \\ [])
-  def reverse([h | t], tail) when is_list(tail), do: reverse(t, [h], tail)
-  def reverse([], tail) when is_list(tail), do: tail
-  def reverse(_list, _tail), do: []
-  defp reverse([h | t], arg, tail), do: reverse(t, [h | arg], tail)
-  defp reverse([], arg, tail), do: arg ++ tail
+  def reverse([]), do: []
+  def reverse([h|t]), do: reverse(t) ++ [h]
+  def reverse(list, tail \\ []), do: reverse(list) ++ tail
 
   @doc """
     List.flatten/1, List.flatten/2 함수를 직접 구현해보자.
