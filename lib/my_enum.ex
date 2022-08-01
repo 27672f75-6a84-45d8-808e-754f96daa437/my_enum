@@ -223,4 +223,127 @@ defmodule MyEnum do
       false -> drop_while(t, function, result ++ [h])
     end
   end
+
+  @doc """
+    Enum.each/2 요소를 순회하며 주어진 함수에 요소값을 넣어 실행합니다.
+    요소를 모두 순회하면 :ok를 반환합니다.
+  """
+
+  def each([], _function), do: :ok
+
+  def each([h | t], function) do
+    function.(h)
+    each(t, function)
+  end
+
+  @doc """
+    Enum.empty?/1 리스트가 비어있는지 확인합니다.
+    비어있으면 true 그렇지 않으면 false를 반환합니다.
+  """
+
+  def empty?([]), do: true
+  def empty?([_h | _t]), do: false
+
+  @doc """
+    fetch!/2 주어진 index의 요소를 반환합니다.
+    index는 zero base 입니다.
+    index가 음수로 전해지면 요소의 맨 뒤에서 부터 순회합니다.
+    index가 리스트의 범위를 벗어나면 OutOfBoundsError가 발생합니다.
+  """
+  def fetch!([h | _t], 0), do: h
+
+  def fetch!(list, index) when index < 0 do
+    list
+    |> MyEnum.reverse()
+    |> fetch!(index * -1 - 1)
+  end
+
+  def fetch!([_ | t], index), do: fetch!(t, index - 1)
+
+  @doc """
+    fetch/2 주어진 index의 요소를 {:ok, element } 형식으로 반환합니다.
+    index는 zero base 입니다.
+    index가 음수로 전해지면 요소의 맨 뒤에서 부터 순회합니다.
+    index가 리스트의 범위를 벗어나면 OutOfBoundsError가 발생합니다.
+    해당 index에 요소가 없다면 :error를 반환합니다.
+  """
+
+  def fetch([h | _t], 0), do: {:ok, h}
+
+  def fetch(list, index) when index < 0 do
+    list
+    |> MyEnum.reverse()
+    |> fetch(index * -1 - 1)
+  end
+
+  def fetch([_ | t], index), do: fetch(t, index - 1)
+
+  def fetch([], _index), do: :error
+
+  @doc """
+    filter/2 리스트에서 주어진 함수에 요소를 넣어 truthy가 나오는 요소들만 반환한다.
+  """
+
+  def filter([], _function), do: []
+  def filter(list, function), do: filter(list, function, [])
+
+  defp filter([], _function, result), do: result
+
+  defp filter([h | t], function, result) do
+    case function.(h) do
+      true -> filter(t, function, result ++ [h])
+      false -> filter(t, function, result)
+    end
+  end
+
+  @doc """
+    find/3 리스트에서 주어진 함수에 truthy한 값을 반환하는 첫번째 요소를 찾아 반환한다.
+    리스트안에 그런 요소가 존재하지 않을 경우 default 값을 반환한다.
+  """
+
+  def find(list, default \\ nil, function)
+  def find([], default, _function), do: default
+
+  def find([h | t], default, function) do
+    case function.(h) do
+      true -> h
+      false -> find(t, default, function)
+    end
+  end
+
+  @doc """
+    find_index/2 find/3와 유사하지만 함수에 truthy한 값을 반환하는 첫번째 요소의 인덱스를 반환합니다.
+    truthy한 요소가 없으면 nil을 반환합니다.
+  """
+
+  def find_index([], _function), do: nil
+  def find_index(list, function), do: find_index(list, function, 0)
+
+  defp find_index([], _function, _depth), do: nil
+
+  defp find_index([h | t], function, depth) do
+    case function.(h) do
+      true -> depth
+      false -> find_index(t, function, depth + 1)
+    end
+  end
+
+  @doc """
+    find_value/3 find/3와 유사하지만 요소 자체 대신 함수 호출 값을 반환한다.
+    반환 값은 함수의 결과에 참일 때 찾은 것으로 간주한다. (nil 이나 false가 아닌경우 참)
+    찾지못하면 반환값으로 default \\ nil 값을 반환한다.
+  """
+
+  def find_value(list, default \\ nil, function)
+  def find_value([], default, _function), do: default
+
+  def find_value([h | t], default, function) do
+    result = function.(h)
+
+    case result do
+      nil -> find_value(t, default, function)
+      false -> find_value(t, default, function)
+      _ -> result
+    end
+  end
 end
