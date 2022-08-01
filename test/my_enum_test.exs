@@ -299,4 +299,140 @@ defmodule MyEnumTest do
       assert [1, 2, 3, 4, 5] == MyEnum.drop_while([1, 2, 3, 4, 5], fn _ -> false end)
     end
   end
+
+  describe "MyEnum.each/2 tests" do
+    test "제공한 리스트가 비어있다면 :ok을 반환한다." do
+      assert :ok == MyEnum.each([], fn x -> rem(x, 2) == 0 end)
+    end
+
+    test "요소를 순회하며 주어진 함수에 요소값을 넣어 실행한다. 모두 순회하면 :ok를 반환한다." do
+      assert :ok == MyEnum.each([1, 2, 3, 3, 2, 1], fn x -> x - 1 == 0 end)
+    end
+
+    test "함수의 결과에는 영향을 받지않고 모든 요소를 순회하면 :ok를 반환한다." do
+      assert :ok == MyEnum.each([1, 2, 3, 4, 5], fn _ -> false end)
+    end
+  end
+
+  describe "MyEnum.empty?/1 tests" do
+    test "제공한 리스트가 비어있다면 true를 반환한다." do
+      assert true == MyEnum.empty?([])
+    end
+
+    test "제공한 리스트가 비어있지 않다면 false를 반환한다." do
+      assert false == MyEnum.empty?([1, 2, 3])
+    end
+
+    test "제공한 인자가 리스트가 아니면 :error를 반환한다." do
+      assert :error == MyEnum.empty?("list")
+    end
+  end
+
+  describe "MyEnum.fetch!/2 tests" do
+    test "제공한 리스트가 비어있다면 :error를 반환한다." do
+      assert :error == MyEnum.fetch!([], 2)
+    end
+
+    test "리스트에서 해당하는 인덱스의 요소를 찾지못하여 범위를 벗어나면 :error를 반환한다." do
+      assert :error == MyEnum.fetch!([1, 2, 3], 4)
+    end
+
+    test "리스트에서 해당하는 인덱스의 요소를 찾으면 요소를 반환한다." do
+      assert 1 == MyEnum.fetch!([1, 2, 3], 0)
+    end
+
+    test "인덱스를 음수로 넣으면 요소의 뒤에서 부터 fetch!/2 수행한다." do
+      assert 3 == MyEnum.fetch!([1, 2, 3], -1)
+    end
+
+    test "인덱스를 음수로 넣을때 역시 리스트의 범위를 벗어나면 :error를 반환한다." do
+      assert :error == MyEnum.fetch!([1, 2, 3], -5)
+    end
+  end
+
+  describe "MyEnum.fetch/2 tests" do
+    test "제공한 리스트가 비어있다면 :error를 반환한다." do
+      assert :error == MyEnum.fetch([], 2)
+    end
+
+    test "리스트에서 해당하는 인덱스의 요소를 찾지못하여 범위를 벗어나면 :error를 반환한다." do
+      assert :error == MyEnum.fetch([1, 2, 3], 4)
+    end
+
+    test "리스트에서 해당하는 인덱스의 요소를 찾으면 {:ok, _arg}를 반환한다." do
+      assert {:ok, 1} == MyEnum.fetch([1, 2, 3], 0)
+    end
+
+    test "인덱스를 음수로 넣으면 요소의 뒤에서 부터 fetch/2 수행한다." do
+      assert {:ok, 3} == MyEnum.fetch([1, 2, 3], -1)
+    end
+
+    test "인덱스를 음수로 넣을때 역시 리스트의 범위를 벗어나면 :error를 반환한다." do
+      assert :error == MyEnum.fetch([1, 2, 3], -5)
+    end
+  end
+
+  describe "MyEnum.filter/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환한다." do
+      assert [] == MyEnum.filter([], fn x -> x > 2 end)
+    end
+
+    test "리스트에서 함수에 요소를 넣어 만족하는 요소들만 결과로 반환한다." do
+      assert [2, 3] == MyEnum.filter([1, 2, 3], fn x -> x > 1 end)
+    end
+
+    test "리스트에서 함수에 만족하는 요소가 없으면 []를 반환한다." do
+      assert [] == MyEnum.filter([1, 2, 3], fn x -> x < 0 end)
+    end
+  end
+
+  describe "MyEnum.find/3 tests" do
+    test "제공한 리스트가 비어있다면 default \\ nil를 반환한다." do
+      assert nil == MyEnum.find([], fn x -> x == 2 end)
+    end
+
+    test "리스트에서 함수에 만족하는 첫번째 요소를 반환한다." do
+      assert 2 == MyEnum.find([1, 2, 3], fn x -> x == 2 end)
+    end
+
+    test "리스트에서 함수에 만족하는 요소가 없을 때 default값이 제공됐다면 default값을 반환한다." do
+      assert "can't find" == MyEnum.find([1, 2, 3], "can't find", fn x -> x < 0 end)
+    end
+  end
+
+  describe "MyEnum.find_index/2 tests" do
+    test "제공한 리스트가 비어있다면 nil를 반환한다." do
+      assert nil == MyEnum.find_index([], fn x -> x == 2 end)
+    end
+
+    test "리스트에서 함수에 만족하는 첫번째 요소의 인덱스를 반환한다." do
+      assert 1 == MyEnum.find_index([1, 2, 3], fn x -> x == 2 end)
+    end
+
+    test "리스트에서 함수에 만족하는 요소가 없으면 nil을 반환한다." do
+      assert nil == MyEnum.find_index([1, 2, 3], fn x -> x < 0 end)
+    end
+  end
+
+  describe "MyEnum.find_value/3 tests" do
+    test "제공한 리스트가 비어있다면 default \\ nil를 반환한다." do
+      assert nil == MyEnum.find_value([], fn x -> x == 2 end)
+    end
+
+    test "리스트에서 함수에 만족하는 첫번째 요소의 함수 호출 값을 반환한다." do
+      assert 9 == MyEnum.find_value([1, 2, 3], fn x -> if x > 2, do: x * x end)
+    end
+
+    test "리스트에서 함수에 만족하는 첫번째 요소의 함수 호출 값을 반환한다. 2" do
+      assert true == MyEnum.find_value([2, 3, 4], fn x -> rem(x, 2) == 1 end)
+    end
+
+    test "리스트에서 함수에 만족하는 첫번째 요소가 없다면 default 값을 반환한다." do
+      assert nil == MyEnum.find_value([2, 3, 4], fn x -> x < 0 end)
+    end
+
+    test "리스트에서 함수에 만족하는 요소가 없고 default값이 제공되어 있다면 default를 반환한다." do
+      assert "no bools!" == MyEnum.find_value([1, 2, 3], "no bools!", &is_boolean/1)
+    end
+  end
 end
