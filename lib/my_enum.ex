@@ -72,9 +72,9 @@ defmodule MyEnum do
   """
 
   def reverse(list, tail \\ [])
-  def reverse([h | t], tail) when is_list(tail) , do: reverse(t, [h], tail)
+  def reverse([h | t], tail) when is_list(tail), do: reverse(t, [h], tail)
   def reverse([], tail) when is_list(tail), do: tail
-  def reverse(_list,_tail), do: []
+  def reverse(_list, _tail), do: []
   defp reverse([h | t], arg, tail), do: reverse(t, [h | arg], tail)
   defp reverse([], arg, tail), do: arg ++ tail
 
