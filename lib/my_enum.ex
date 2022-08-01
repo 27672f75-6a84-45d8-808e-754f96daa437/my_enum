@@ -243,7 +243,6 @@ defmodule MyEnum do
 
   def empty?([]), do: true
   def empty?([_h | _t]), do: false
-  def empty?(_not_list), do: :error
 
   @doc """
     fetch!/2 주어진 index의 요소를 반환합니다.
@@ -252,7 +251,6 @@ defmodule MyEnum do
     index가 리스트의 범위를 벗어나면 OutOfBoundsError가 발생합니다.
     해당 index에 요소가 없다면 :error를 반환합니다.
   """
-  def fetch!([], _index), do: :error
   def fetch!([h | _t], 0), do: h
 
   def fetch!(list, index) when index < 0 do
@@ -272,7 +270,6 @@ defmodule MyEnum do
     index가 리스트의 범위를 벗어나면 OutOfBoundsError가 발생합니다.
   """
 
-  def fetch([], _index), do: :error
   def fetch([h | _t], 0), do: {:ok, h}
 
   def fetch(list, index) when index < 0 do

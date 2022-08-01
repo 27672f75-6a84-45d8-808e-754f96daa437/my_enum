@@ -322,10 +322,6 @@ defmodule MyEnumTest do
     test "제공한 리스트가 비어있지 않다면 false를 반환한다." do
       assert false == MyEnum.empty?([1, 2, 3])
     end
-
-    test "제공한 인자가 리스트가 아니면 :error를 반환한다." do
-      assert :error == MyEnum.empty?("list")
-    end
   end
 
   describe "MyEnum.fetch!/2 tests" do
