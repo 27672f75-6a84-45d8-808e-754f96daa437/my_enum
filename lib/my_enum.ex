@@ -249,7 +249,6 @@ defmodule MyEnum do
     index는 zero base 입니다.
     index가 음수로 전해지면 요소의 맨 뒤에서 부터 순회합니다.
     index가 리스트의 범위를 벗어나면 OutOfBoundsError가 발생합니다.
-    해당 index에 요소가 없다면 :error를 반환합니다.
   """
   def fetch!([h | _t], 0), do: h
 
@@ -261,13 +260,12 @@ defmodule MyEnum do
 
   def fetch!([_ | t], index), do: fetch!(t, index - 1)
 
-  def fetch!(_list, _index), do: :error
-
   @doc """
     fetch/2 주어진 index의 요소를 {:ok, element } 형식으로 반환합니다.
     index는 zero base 입니다.
     index가 음수로 전해지면 요소의 맨 뒤에서 부터 순회합니다.
     index가 리스트의 범위를 벗어나면 OutOfBoundsError가 발생합니다.
+    해당 index에 요소가 없다면 :error를 반환합니다.
   """
 
   def fetch([h | _t], 0), do: {:ok, h}
@@ -280,7 +278,7 @@ defmodule MyEnum do
 
   def fetch([_ | t], index), do: fetch(t, index - 1)
 
-  def fetch(_list, _index), do: :error
+  def fetch([], _index), do: :error
 
   @doc """
     filter/2 리스트에서 주어진 함수에 요소를 넣어 truthy가 나오는 요소들만 반환한다.

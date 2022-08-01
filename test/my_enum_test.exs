@@ -325,24 +325,12 @@ defmodule MyEnumTest do
   end
 
   describe "MyEnum.fetch!/2 tests" do
-    test "제공한 리스트가 비어있다면 :error를 반환한다." do
-      assert :error == MyEnum.fetch!([], 2)
-    end
-
-    test "리스트에서 해당하는 인덱스의 요소를 찾지못하여 범위를 벗어나면 :error를 반환한다." do
-      assert :error == MyEnum.fetch!([1, 2, 3], 4)
-    end
-
     test "리스트에서 해당하는 인덱스의 요소를 찾으면 요소를 반환한다." do
       assert 1 == MyEnum.fetch!([1, 2, 3], 0)
     end
 
     test "인덱스를 음수로 넣으면 요소의 뒤에서 부터 fetch!/2 수행한다." do
       assert 3 == MyEnum.fetch!([1, 2, 3], -1)
-    end
-
-    test "인덱스를 음수로 넣을때 역시 리스트의 범위를 벗어나면 :error를 반환한다." do
-      assert :error == MyEnum.fetch!([1, 2, 3], -5)
     end
   end
 
