@@ -96,11 +96,23 @@ defmodule MyEnumTest do
     test "주어진 리스트를 반대로 뒤집는다." do
       assert [3, 2, 1] == MyEnum.reverse([1, 2, 3])
     end
+
+    test "주어진 리스트가 비어있다면 []를 반환한다." do
+      assert [] == MyEnum.reverse([])
+    end
   end
 
   describe "MyEnum.reverse/2 tests" do
     test "주어진 리스트를 반대로 뒤집고 tail있다면 뒤집은 리스트에 붙여 반환한다." do
       assert [3, 2, 1, 4, 5, 6] == MyEnum.reverse([1, 2, 3], [4, 5, 6])
+    end
+
+    test "주어진 리스트가 [] 이고 tail있다면 tail만 반환한다." do
+      assert [4, 5, 6] == MyEnum.reverse([], [4, 5, 6])
+    end
+
+    test "주어진 리스트가 [] 이고 tail도 []라면 []를 반환한다." do
+      assert [] == MyEnum.reverse([], [])
     end
   end
 

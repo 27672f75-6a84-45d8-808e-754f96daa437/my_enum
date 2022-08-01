@@ -72,8 +72,9 @@ defmodule MyEnum do
   """
 
   def reverse(list, tail \\ [])
-  def reverse([h | t], tail), do: reverse(t, [h], tail)
-  def reverse([], _tail), do: []
+  def reverse([h | t], tail) when is_list(tail) , do: reverse(t, [h], tail)
+  def reverse([], tail) when is_list(tail), do: tail
+  def reverse(_list,_tail), do: []
   defp reverse([h | t], arg, tail), do: reverse(t, [h | arg], tail)
   defp reverse([], arg, tail), do: arg ++ tail
 
@@ -179,22 +180,16 @@ defmodule MyEnum do
   """
 
   def drop([], _amount), do: []
-  def drop(list, amount) when amount >= 0, do: drop(list, amount, 0, amount - 0 <= 0, true)
+  def drop(list, 0), do: list
 
-  def drop(list, amount) when amount < 0,
-    do: drop(MyEnum.reverse(list), -amount, 0, -amount - 0 <= 0, false)
-
-  defp drop([], _amount, _depth, false, _is_positive_amount), do: []
-
-  defp drop([_ | t], amount, depth, false, is_positive_amount),
-    do: drop(t, amount, depth + 1, amount - (depth + 1) <= 0, is_positive_amount)
-
-  defp drop(list, _, _depth, true, is_positive_amount) do
-    case is_positive_amount do
-      true -> list
-      false -> MyEnum.reverse(list)
-    end
+  def drop(list, amount) when amount < 0 do
+    list
+    |> reverse()
+    |> drop(amount * -1)
+    |> reverse()
   end
+
+  def drop([_h | t], amount), do: drop(t, amount - 1)
 
   @doc """
     Enum.drop_every/2 리스트에서 주어진 nth 간격으로 요소를 삭제해 나갑니다.
@@ -207,14 +202,14 @@ defmodule MyEnum do
   def drop_every(list, 0), do: list
   def drop_every([_ | t], nth), do: drop_every(t, nth, 1, [])
 
+  defp drop_every([], _nth, _depth, result), do: result
+
   defp drop_every([h | t], nth, depth, result) do
     case nth - depth == 0 do
       true -> drop_every(t, nth, 1, result)
       false -> drop_every(t, nth, depth + 1, result ++ [h])
     end
   end
-
-  defp drop_every([], _nth, _depth, result), do: result
 
   @doc """
     Enum.drop_while/2 리스트에서 함수에 만족하는 요소를 삭제해 나갑니다.
