@@ -372,7 +372,7 @@ defmodule MyEnum do
   end
 
   @doc """
-    요소가 리스트내에서 얼마나 반복되는지를 맵으로 변환하여 반환합니다.
+    frequencies/1 요소가 리스트내에서 얼마나 반복되는지를 맵으로 변환하여 반환합니다.
   """
 
   def frequencies(list), do: frequencies(list, %{})
@@ -388,7 +388,7 @@ defmodule MyEnum do
   end
 
   @doc """
-    주어진 함수로 요소에 적용하며 만들어진 키값이 얼마나 반복되는지를 맵으로 변환하여 반환합니다.
+    frequencies_by/2 주어진 함수로 요소에 적용하며 만들어진 키값이 얼마나 반복되는지를 맵으로 변환하여 반환합니다.
   """
 
   def frequencies_by(list, key_function), do: frequencies_by(list, key_function, %{})
