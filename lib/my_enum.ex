@@ -346,4 +346,61 @@ defmodule MyEnum do
       _ -> result
     end
   end
+
+  @doc """
+    flat_map/2 주어진 함수를 요소에 적용하여 나온 결과를 매핑하고 하나의 리스트로 합치는 평탄화를 진행한다.
+    함수의 매핑 결과는 열거 가능한 형식의 요소를 반환해야합니다.
+  """
+
+  def flat_map([], _function), do: []
+  def flat_map([h | t], function), do: function.(h) ++ flat_map(t, function)
+
+  @doc """
+    flat_map_reduce/3 리스트의 요소를 함수를 적용하여 나온 결과를 매핑하고 한단계의 평탄화를 거쳐 하나의 리스트로 합치며
+    함수를 실행하여 나온 누산 결과를 계속적으로 더해서 마지막에 돌려준다.
+    함수에 제공하는 인자는 2개가 되야한다.
+  """
+
+  def flat_map_reduce(list, acc, function), do: flat_map_reduce(list, acc, function, [])
+  defp flat_map_reduce([], acc, _function, result), do: {result, acc}
+
+  defp flat_map_reduce([h | t], acc, function, result) do
+    case function.(h, acc) do
+      {:halt, next_acc} -> flat_map_reduce(t, next_acc, function, result)
+      {x, next_acc} -> flat_map_reduce(t, next_acc, function, result ++ x)
+    end
+  end
+
+  @doc """
+    frequencies/1 요소가 리스트내에서 얼마나 반복되는지를 맵으로 변환하여 반환합니다.
+  """
+
+  def frequencies(list), do: frequencies(list, %{})
+  defp frequencies([], result), do: result
+
+  defp frequencies([h | t], result) do
+    value = result[h]
+
+    case value do
+      nil -> frequencies(t, Map.put(result, h, 1))
+      value -> frequencies(t, Map.put(result, h, value + 1))
+    end
+  end
+
+  @doc """
+    frequencies_by/2 주어진 함수로 요소에 적용하며 만들어진 키값이 얼마나 반복되는지를 맵으로 변환하여 반환합니다.
+  """
+
+  def frequencies_by(list, key_function), do: frequencies_by(list, key_function, %{})
+  defp frequencies_by([], _key_function, result), do: result
+
+  defp frequencies_by([h | t], key_function, result) do
+    new_key = key_function.(h)
+    value = result[new_key]
+
+    case value do
+      nil -> frequencies_by(t, key_function, Map.put(result, new_key, 1))
+      value -> frequencies_by(t, key_function, Map.put(result, new_key, value + 1))
+    end
+  end
 end
