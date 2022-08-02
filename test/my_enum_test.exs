@@ -419,4 +419,81 @@ defmodule MyEnumTest do
       assert "no bools!" == MyEnum.find_value([1, 2, 3], "no bools!", &is_boolean/1)
     end
   end
+
+  describe "MyEnum.flat_map/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환한다." do
+      assert [] == MyEnum.flat_map([], fn x -> [[x]] end)
+    end
+
+    test "함수를 적용하여 나온 결과를 매핑하고 하나의 리스트로 합친다. 함수 반환결과는 열거 가능형식의 요소다." do
+      assert [[1], [2], [3]] == MyEnum.flat_map([1, 2, 3], fn x -> [[x]] end)
+    end
+
+    test "함수를 적용하여 나온 결과를 매핑하고 하나의 리스트로 합친다. 함수 반환결과는 열거 가능형식의 요소다.2" do
+      assert [:a, :a, :b, :b, :c, :c] == MyEnum.flat_map([:a, :b, :c], fn x -> [x, x] end)
+    end
+  end
+
+  describe "MyEnum.flat_map_reduce/3 tests" do
+    test "제공한 리스트가 비어있다면 {[], acc} 를 반환한다." do
+      acc = 5
+      assert {[], acc} == MyEnum.flat_map_reduce([], acc, fn x, acc -> {[x], acc + 1} end)
+    end
+
+    test "요소에 함수를 적용하여 나온 결과를 매핑하고 한단계 평탄화를 하고 누산된 결과를 반환한다." do
+      acc = 0
+
+      assert {[1, 2, 3], 3} ==
+               MyEnum.flat_map_reduce([1, 2, 3, 4, 5], acc, fn x, acc ->
+                 if acc < 3, do: {[x], acc + 1}, else: {:halt, acc}
+               end)
+    end
+
+    test "요소에 함수를 적용하여 나온 결과를 매핑하고 한단계 평탄화를 하고 누산된 결과를 반환한다.2" do
+      acc = 0
+
+      assert {[[1], [2], [3], [4], [5]], 15} ==
+               MyEnum.flat_map_reduce([1, 2, 3, 4, 5], acc, fn x, acc -> {[[x]], acc + x} end)
+    end
+  end
+
+  describe "MyEnum.frequencies/1 tests" do
+    test "제공한 리스트가 비어있다면 %{} 를 반환한다." do
+      assert %{} == MyEnum.frequencies([])
+    end
+
+    test "요소가 리스트내에서 얼마나 반복되는지를 맵으로 반환한다." do
+      assert %{1 => 1, 2 => 1, 3 => 2, 4 => 1, 5 => 2, 6 => 1, 67 => 1} ==
+               MyEnum.frequencies([1, 2, 3, 3, 4, 5, 5, 6, 67])
+    end
+
+    test "요소가 리스트내에서 얼마나 반복되는지를 맵으로 반환한다.2" do
+      assert %{:a => 3, :b => 3, :c => 2} ==
+               MyEnum.frequencies([:a, :a, :b, :a, :b, :c, :c, :b])
+    end
+
+    test "요소가 리스트내에서 얼마나 반복되는지를 맵으로 반환한다.3" do
+      assert %{"one" => 3, "two" => 2, "three" => 2, "four" => 1} ==
+               MyEnum.frequencies(["one", "one", "three", "two", "two", "one", "three", "four"])
+    end
+  end
+
+  describe "MyEnum.frequencies_by/2 tests" do
+    test "제공한 리스트가 비어있다면 %{} 를 반환한다." do
+      assert %{} == MyEnum.frequencies_by([])
+    end
+
+    test "함수에 요소를 적용하여 나온 결과가 리스트내에서 얼마나 반복되는지를 맵으로 반환한다." do
+      assert %{0 => 7, 1 => 3} ==
+               MyEnum.frequencies_by([1, 2, 2, 3, 3, 4, 4, 2, 2, 4], fn x -> rem(x, 2) end)
+    end
+
+    test "함수에 요소를 적용하여 나온 결과가 리스트내에서 얼마나 반복되는지를 맵으로 반환한다.2" do
+      assert %{3 => 5, 4 => 1, 5 => 1} ==
+               MyEnum.frequencies_by(
+                 ["one", "one", "two", "one", "three", "four", "one"],
+                 &String.length/1
+               )
+    end
+  end
 end
