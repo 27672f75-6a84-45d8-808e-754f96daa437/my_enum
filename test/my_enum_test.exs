@@ -480,7 +480,7 @@ defmodule MyEnumTest do
 
   describe "MyEnum.frequencies_by/2 tests" do
     test "제공한 리스트가 비어있다면 %{} 를 반환한다." do
-      assert %{} == MyEnum.frequencies_by([])
+      assert %{} == MyEnum.frequencies_by([], fn x -> x end)
     end
 
     test "함수에 요소를 적용하여 나온 결과가 리스트내에서 얼마나 반복되는지를 맵으로 반환한다." do
