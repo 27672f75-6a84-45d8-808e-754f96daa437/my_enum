@@ -361,7 +361,6 @@ defmodule MyEnum do
     함수에 제공하는 인자는 2개가 되야한다.
   """
 
-  def flat_map_reduce([], acc, _function), do: {[], acc}
   def flat_map_reduce(list, acc, function), do: flat_map_reduce(list, acc, function, [])
   defp flat_map_reduce([], acc, _function, result), do: {result, acc}
 
@@ -376,7 +375,6 @@ defmodule MyEnum do
     요소가 리스트내에서 얼마나 반복되는지를 맵으로 변환하여 반환합니다.
   """
 
-  def frequencies([]), do: %{}
   def frequencies(list), do: frequencies(list, %{})
   defp frequencies([], result), do: result
 
@@ -393,7 +391,6 @@ defmodule MyEnum do
     주어진 함수로 요소에 적용하며 만들어진 키값이 얼마나 반복되는지를 맵으로 변환하여 반환합니다.
   """
 
-  def frequencies_by([], _key_function), do: %{}
   def frequencies_by(list, key_function), do: frequencies_by(list, key_function, %{})
   defp frequencies_by([], _key_function, result), do: result
 
