@@ -403,4 +403,80 @@ defmodule MyEnum do
       value -> frequencies_by(t, key_function, Map.put(result, new_key, value + 1))
     end
   end
+
+  @doc """
+    group_by/3 제공한 key_function 함수를 사용하여 요소를 적용하여 나온 Key를 만족하는 요소들을 그룹화하고
+    제공한 value_fun으로 value에 저장되는 요소를 변환 시킵니다. value_fun을 제공하지 않을경우에는 default 값으로
+    fn x -> x end 값이 들어갑니다.
+  """
+
+  def group_by(list, key_function, value_function \\ fn x -> x end)
+
+  def group_by(list, key_function, value_function),
+    do: group_by(list, key_function, value_function, %{})
+
+  defp group_by([], _key_function, _value_function, result), do: result
+
+  defp group_by([h | t], key_function, value_function, result) do
+    new_key = key_function.(h)
+    new_value = value_function.(h)
+    value = result[new_key]
+
+    case value do
+      nil ->
+        group_by(t, key_function, value_function, Map.put(result, new_key, [new_value]))
+
+      value ->
+        group_by(t, key_function, value_function, Map.put(result, new_key, value ++ [new_value]))
+    end
+  end
+
+  @doc """
+    intersperse/2 리스트 요소 사이에 구분자를 넣습니다.
+    요소가 하나일 경우에는 바로 반환합니다 [1] ==> [1]
+    요소가 빈 경우 []를 반환합니다.
+  """
+
+  def intersperse(list, seperator), do: intersperse(list, seperator, 0, [])
+  defp intersperse([], _sperator, _depth, result), do: result
+
+  defp intersperse([h | t], seperator, depth, result) do
+    case rem(depth, 2) == 0 do
+      true -> intersperse(t, seperator, depth + 1, result ++ [h])
+      false -> intersperse([h | t], seperator, depth + 1, result ++ [seperator])
+    end
+  end
+
+  @doc """
+    into/3 리스트의 요소에서 함수를 적용하여 나온값을 주어진 colletable에 변환하여 넣습니다.
+  """
+  def into([], colletable), do: colletable
+  def into([h | t], colletable) when is_list(colletable), do: into(t, colletable ++ [h])
+
+  def into([h | t], colletable) when is_map(colletable) do
+    {k, v} = h
+    new_map = Map.put(colletable, k, v)
+    into(t, new_map)
+  end
+
+  # map의 키를 바인딩 하는 방법을 몰라서 comprehension으로 구현했습니다.
+  # 리뷰 부탁드립니다 !!
+  def into(map, colletable) when is_map(map) do
+    for {k, v} <- map, into: colletable, do: {k, v}
+  end
+
+  @doc """
+    join/2 구분 기호로 사용하여 주어진 joiner로 요소들을 문자열로 결합합니다.
+    joiner가 주어지지 않으면 default 값인 "" 빈 문자열이 사용됩니다.
+    모든 요소는 문자열로 변환할 수 있어야 합니다.
+  """
+  def join(list, joiner \\ ""), do: join(list, joiner, 0, "")
+  defp join([], _joiner, _depth, result), do: result
+
+  defp join([h | t], joiner, depth, result) do
+    case rem(depth, 2) == 0 do
+      true -> join(t, joiner, depth + 1, result <> "#{h}")
+      false -> join([h | t], joiner, depth + 1, result <> joiner)
+    end
+  end
 end

@@ -496,4 +496,93 @@ defmodule MyEnumTest do
                )
     end
   end
+
+  describe "MyEnum.group_by/3 tests" do
+    test "제공한 리스트가 비어있다면 %{} 를 반환한다." do
+      assert %{} == MyEnum.group_by([], fn x -> x end)
+    end
+
+    test "key_function에 요소를 적용하여 얻은 Key 결과가 같은 요소끼리 그룹화 하여 반환합니다. " do
+      assert %{3 => ["asd", "one"], 4 => ["four"], 5 => ["three"]} ==
+               MyEnum.group_by(["asd", "one", "three", "four"], &String.length/1)
+    end
+
+    test "key_function에 요소를 적용하여 얻은 Key 결과가 같은 요소끼리 그룹화 하여 반환합니다.2 " do
+      assert %{0 => [2, 2, 4, 4, 6, 8], 1 => [1, 3, 5, 7, 7, 9]} ==
+               MyEnum.group_by([1, 2, 2, 3, 4, 4, 5, 6, 7, 7, 8, 9], fn x -> rem(x, 2) end)
+    end
+
+    test "key_function에 요소를 적용하여 얻은 Key 결과가 같은 요소를 value_function을 적용하여 반환합니다. " do
+      assert %{3 => ["a", "o"], 4 => ["f"], 5 => ["t"]} ==
+               MyEnum.group_by(["asd", "one", "three", "four"], &String.length/1, &String.first/1)
+    end
+
+    test "key_function에 요소를 적용하여 얻은 Key 결과가 같은 요소를 value_function을 적용하여 반환합니다.2 " do
+      assert %{0 => [4, 4, 16, 16, 36, 64], 1 => [1, 9, 25, 49, 49, 81]} ==
+               MyEnum.group_by(
+                 [1, 2, 2, 3, 4, 4, 5, 6, 7, 7, 8, 9],
+                 fn x -> rem(x, 2) end,
+                 fn x -> x * x end
+               )
+    end
+  end
+
+  describe "MyEnum.intersperse/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.intersperse([], 0)
+    end
+
+    test "제공한 리스트의 요소가 하나라면 리스트를 바로 반환합니다." do
+      assert [1] == MyEnum.intersperse([1], 0)
+    end
+
+    test "제공한 리스트의 요소 사이에 구분자를 넣습니다." do
+      assert [1, 0, 2, 0, 3, 0, 4, 0, 5] == MyEnum.intersperse([1, 2, 3, 4, 5], 0)
+    end
+
+    test "제공한 리스트의 요소 사이에 구분자를 넣습니다.2" do
+      assert [1, "seperator", 2, "seperator", 3, "seperator", 4, "seperator", 5] ==
+               MyEnum.intersperse([1, 2, 3, 4, 5], "seperator")
+    end
+  end
+
+  describe "MyEnum.into/3 tests" do
+    test "제공한 리스트가 비어있다면 colletable을 반환합니다." do
+      colletable = %{a: 1, b: 2, c: 3}
+      assert colletable == MyEnum.into([], colletable)
+    end
+
+    test "list가 제공되고 colletable이 list일때 colletable에 리스트 요소를 넣어 반환합니다." do
+      colletable = [4, 5, 6]
+      assert [4, 5, 6, 1, 2, 3] == MyEnum.into([1, 2, 3], colletable)
+    end
+
+    test "keyword list가 제공되고 colletable이 map일때 colletable에 리스트 요소를 넣어 반환합니다." do
+      colletable = %{a: 5}
+      assert %{a: 1, b: 2, c: 3} == MyEnum.into([a: 1, b: 2, c: 3], colletable)
+    end
+
+    test "map이 제공되고 colletable이 list일때 colletable에 map 요소를 넣어 반환합니다." do
+      assert [{0, [1, 2, 3]}, {:a, 1}] == MyEnum.into(%{0 => [1, 2, 3], a: 1}, [])
+    end
+
+    test "map이 제공되고 colletable이 map일때 colletable에 map 요소를 넣어 반환합니다." do
+      assert %{0 => [1, 2, 3], :a => 1, :b => 2} ==
+               MyEnum.into(%{0 => [1, 2, 3], a: 1}, %{0 => [1], a: 4, b: 2})
+    end
+  end
+
+  describe "MyEnum.join/2 tests" do
+    test "빈 리스트가 주어지면 빈 문자열을 반환합니다" do
+      assert "" == MyEnum.join([], "is_empty")
+    end
+
+    test "리스트만 주어지면 하나의 문자열로 반환합니다." do
+      assert "123" == MyEnum.join([1, 2, 3])
+    end
+
+    test "리스트와 joiner가 주어지면 joiner를 구분자로 하여 하나의 문자열을 반환합니다." do
+      assert "1 / 2 / 3" == MyEnum.join([1, 2, 3], " / ")
+    end
+  end
 end
