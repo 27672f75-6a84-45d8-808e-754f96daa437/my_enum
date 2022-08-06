@@ -639,30 +639,30 @@ defmodule MyEnumTest do
 
   describe "MyEnum.map_intersperse/3 tests" do
     test "빈 리스트가 주어지면 빈 리스트를 반환합니다" do
-      assert [] = MyEnum.map_intersperse([], :a, fn x -> -x end)
+      assert [] == MyEnum.map_intersperse([], :a, fn x -> -x end)
     end
 
     test "요소가 하나라면 구분자를 넣지않고 함수만 적용하여 반환합니다." do
-      assert [-1] = MyEnum.map_intersperse([1], :a, fn x -> -x end)
+      assert [-1] == MyEnum.map_intersperse([1], :a, fn x -> -x end)
     end
 
     test "요소에 함수를 적용하고 각 요소 사이 구분자를 넣어 리스트를 반환합니다." do
-      assert [-1, :a, -2, :a, -3, :a, -4, :a, -5] =
+      assert [-1, :a, -2, :a, -3, :a, -4, :a, -5] ==
                MyEnum.map_intersperse([1, 2, 3, 4, 5], :a, &(-&1))
     end
   end
 
   describe "MyEnum.map_join/3 tests" do
     test "빈 리스트가 주어지면 빈 문자열을 반환합니다" do
-      assert "" = MyEnum.map_join([], " = ", fn x -> -x end)
+      assert "" == MyEnum.map_join([], " = ", fn x -> -x end)
     end
 
     test "요소 사이에 joiner 값을 넣는데 주어지지 않으면 default 값인 빈문자열을 넣고 요소에 함수를 적용하여 하나의 문자열로 만듭니다." do
-      assert "-1-2-3-4-5" = MyEnum.map_join([1, 2, 3, 4, 5], "", fn x -> -x end)
+      assert "-1-2-3-4-5" == MyEnum.map_join([1, 2, 3, 4, 5], "", fn x -> -x end)
     end
 
     test "요소 사이에 joiner 값을 넣고 요소에 함수를 적용하여 하나의 문자열로 만듭니다." do
-      assert "-1 = -2 = -3 = -4 = -5" = MyEnum.map_join([1, 2, 3, 4, 5], " = ", fn x -> -x end)
+      assert "-1 = -2 = -3 = -4 = -5" == MyEnum.map_join([1, 2, 3, 4, 5], " = ", fn x -> -x end)
     end
   end
 
