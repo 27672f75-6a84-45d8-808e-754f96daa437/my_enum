@@ -479,4 +479,76 @@ defmodule MyEnum do
       false -> join([h | t], joiner, depth + 1, result <> joiner)
     end
   end
+
+  @doc """
+    map/2 각 요소에 함수를 적용한 값으로 요소를 변환해 list 형식으로 반환합니다
+    map, keywordlist 요소에 대해서는 함수 파라미터로 key-value tuple로 패턴매칭되는 함수를 제공해야합니다.
+  """
+
+  def map([], _function), do: []
+  def map([h | t], function), do: [function.(h)] ++ map(t, function)
+  def map(map, function), do: for({k, v} <- map, into: [], do: function.({k, v}))
+
+  @doc """
+    map_every/3 모든 요소에서 주어진 nth번째의 요소에 주어진 함수를 호출하여 나온 결과 목록을 반환합니다.
+    nth가 0일때는 주어진 리스트 그대로 반환이되고
+    nth가 1이상일 때는 요소에서 nth번째의 요소에 함수를 호출하는데 첫 번째 인자는 무조건적으로 항상 함수를 적용합니다.
+    nth는 음이 아닌 정수여야 합니다.
+  """
+  def map_every(list, 0, _function), do: list
+
+  def map_every(map, nth, function) when is_map(map),
+    do: map_every(Enum.to_list(map), nth, function)
+
+  def map_every(list, nth, function), do: map_every(list, nth, function, 0)
+  defp map_every([], _nth, _function, _now_nth), do: []
+
+  defp map_every([h | t], nth, function, 0),
+    do: [function.(h)] ++ map_every(t, nth, function, nth - 1)
+
+  defp map_every([h | t], nth, function, now_nth),
+    do: [h] ++ map_every(t, nth, function, now_nth - 1)
+
+  @doc """
+    map_intersperse/3 모든 요소에 사이에 separator 요소를 넣고 주어진 함수에 요소를 매핑한다.
+  """
+
+  def map_intersperse([], _separator, _mapper), do: []
+
+  def map_intersperse([h | [ht | t]], separator, mapper),
+    do:
+      [mapper.(h)] ++
+        [separator] ++ [mapper.(ht)] ++ [separator] ++ map_intersperse(t, separator, mapper)
+
+  def map_intersperse([h | _t], _separator, mapper), do: [mapper.(h)]
+
+  @doc """
+    map_join/3 모든 요소 사이에 joiner를 넣고 요소에 함수를 적용하며 하나의 문자열로 합하여 요소를 매핑한다.
+    joiner가 주어지지않으면 default 값으로 빈 문자열 "" 가 들어갑니다.
+  """
+
+  def map_join(list, joiner \\ "", mapper)
+  def map_join([], _joiner, _mapper), do: ""
+
+  def map_join([h | [ht | t]], joiner, mapper),
+    do:
+      "#{mapper.(h)}" <>
+        joiner <> "#{mapper.(ht)}" <> joiner <> map_join(t, joiner, mapper)
+
+  def map_join([h | _t], _joiner, mapper), do: "#{mapper.(h)}"
+
+  @doc """
+    map_reduce/3 리스트의 요소를 함수를 적용하여 나온 결과를 매핑하고
+    함수를 실행하여 나온 누산 결과를 계속적으로 더해서 마지막에 돌려준다.
+    함수에 제공하는 인자는 2개가 되야한다.
+    맵이 제공될 경우 첫번째 튜플요소는 반드시 {key, value} 튜플이어야한다.
+  """
+
+  def map_reduce(list, acc, function), do: map_reduce(list, acc, function, [])
+  defp map_reduce([], acc, _function, result), do: {result, acc}
+
+  defp map_reduce([h | t], acc, function, result) do
+    {x, next_acc} = function.(h, acc)
+    map_reduce(t, next_acc, function, result ++ [x])
+  end
 end
