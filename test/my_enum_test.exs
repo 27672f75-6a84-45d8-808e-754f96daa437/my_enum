@@ -585,4 +585,101 @@ defmodule MyEnumTest do
       assert "1 / 2 / 3" == MyEnum.join([1, 2, 3], " / ")
     end
   end
+
+  describe "MyEnum.map/2 tests" do
+    test "빈 리스트가 주어지면 빈 리스트를 반환합니다" do
+      assert [] == MyEnum.map([], fn x -> x end)
+    end
+
+    test "리스트의 모든 요소에 함수를 적용하여 리스트 형식으로 반환합니다." do
+      assert [-1, -2, -3] == MyEnum.map([1, 2, 3], fn x -> -x end)
+    end
+
+    test "키워드 리스트의 모든 요소에 함수를 적용하여 리스트 형식으로 반환합니다." do
+      assert [a: 2, b: 4, c: 6] == MyEnum.map([a: 1, b: 2, c: 3], fn {k, v} -> {k, v * 2} end)
+    end
+
+    test "맵의 모든 요소에 함수를 적용하여 리스트 형식으로 반환합니다." do
+      assert [a: 0, b: 1, c: 2] == MyEnum.map(%{a: 1, b: 2, c: 3}, fn {k, v} -> {k, v - 1} end)
+    end
+  end
+
+  describe "MyEnum.map_every/3 tests" do
+    test "빈 리스트가 주어지면 빈 리스트를 반환합니다." do
+      assert [] == MyEnum.map_every([], 2, fn x -> x end)
+    end
+
+    test "주어진 요소를 nth 간격으로 함수를 적용하여 바뀐 요소들의 리스트를 반환합니다." do
+      assert [-1, 2, -3, 4, -5, 6, -7, 8, -9, 10] ==
+               MyEnum.map_every([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2, fn x -> -x end)
+    end
+
+    test "주어진 키워드 리스트 요소를 nth 간격으로 함수를 적용하여 바뀐 요소들의 리스트를 반환합니다." do
+      assert [a: -1, b: 2, c: -3, d: 4, e: -5, f: 6, g: -7] ==
+               MyEnum.map_every([a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7], 2, fn {k, v} ->
+                 {k, -v}
+               end)
+    end
+
+    test "주어진 간격이 1이라면 모든 요소에 함수를 적용하여 리스트를 반환합니다." do
+      assert [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10] ==
+               MyEnum.map_every([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 1, fn x -> -x end)
+    end
+
+    test "주어진 간격이 0이라면 주어진 리스트를 그대로 반환합니다." do
+      assert [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] ==
+               MyEnum.map_every([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0, fn x -> -x end)
+    end
+
+    test "map이 주어질 경우 모든 요소에 함수를 적용하여 리스트로 키워드 리스트로 반환합니다." do
+      assert [a: -1, b: 2, c: -3, d: 4, e: -5, f: 6] ==
+               MyEnum.map_every(%{a: 1, b: 2, c: 3, d: 4, e: 5, f: 6}, 2, fn {k, v} -> {k, -v} end)
+    end
+  end
+
+  describe "MyEnum.map_intersperse/3 tests" do
+    test "빈 리스트가 주어지면 빈 리스트를 반환합니다" do
+      assert [] = MyEnum.map_intersperse([], :a, fn x -> -x end)
+    end
+
+    test "요소가 하나라면 구분자를 넣지않고 함수만 적용하여 반환합니다." do
+      assert [-1] = MyEnum.map_intersperse([1], :a, fn x -> -x end)
+    end
+
+    test "요소에 함수를 적용하고 각 요소 사이 구분자를 넣어 리스트를 반환합니다." do
+      assert [-1, :a, -2, :a, -3, :a, -4, :a, -5] =
+               MyEnum.map_intersperse([1, 2, 3, 4, 5], :a, &(-&1))
+    end
+  end
+
+  describe "MyEnum.map_join/3 tests" do
+    test "빈 리스트가 주어지면 빈 문자열을 반환합니다" do
+      assert "" = MyEnum.map_join([], " = ", fn x -> -x end)
+    end
+
+    test "요소 사이에 joiner 값을 넣는데 주어지지 않으면 default 값인 빈문자열을 넣고 요소에 함수를 적용하여 하나의 문자열로 만듭니다." do
+      assert "-1-2-3-4-5" = MyEnum.map_join([1, 2, 3, 4, 5], "", fn x -> -x end)
+    end
+
+    test "요소 사이에 joiner 값을 넣고 요소에 함수를 적용하여 하나의 문자열로 만듭니다." do
+      assert "-1 = -2 = -3 = -4 = -5" = MyEnum.map_join([1, 2, 3, 4, 5], " = ", fn x -> -x end)
+    end
+  end
+
+  describe "MyEnum.map_reduce/3 tests" do
+    test "빈 리스트가 주어지면 {[], acc} 가 반환됩니다." do
+      acc = 3
+      assert {[], 3} == MyEnum.map_reduce([], acc, fn x, acc -> {[x], acc + 1} end)
+    end
+
+    test "모든 요소에 매핑함수를 적용하여 나온 결과와 누산된 결과를 반환합니다." do
+      assert {[[2], [4], [6], '\b', '\n'], 5} ==
+               MyEnum.map_reduce([1, 2, 3, 4, 5], 0, fn x, acc -> {[x * 2], acc + 1} end)
+    end
+
+    test "모든 요소에 매핑함수를 적용하여 나온 결과와 누산된 결과를 반환합니다. 2" do
+      assert {[2, 4, 6, 8, 10], 15} ==
+               MyEnum.map_reduce([1, 2, 3, 4, 5], 0, fn x, acc -> {x * 2, x + acc} end)
+    end
+  end
 end
