@@ -551,4 +551,237 @@ defmodule MyEnum do
     {x, next_acc} = function.(h, acc)
     map_reduce(t, next_acc, function, result ++ [x])
   end
+
+  @doc """
+
+    max/3 주어진 요소에서 가장 큰 요소를 반환합니다.
+    가장 큰 요소의 산출 기준은 Erlang의 용어 순서에 따라 산출하고 용어 순서는 다음과 같다.
+    number < atom < reference < function < port < pid < tuple < map < list < bitstring
+
+    기본적인 비교는 >= sorter 함수로 수행되고, 모든 요소가 최대로 간주되는 경우 첫번째 요소를 반환한다.
+    만약 첫번째 요소를 반환하지 않고 마지막 요소를 반환하고 싶다면 분류 함수에서 동일한 요소에 대해서 true를 반환하지 않으면 된다.
+
+    열거 가능한 항목이 비어 있으면 제공된 항목 empty_fallback이 호출된다 default 값은 fn -> raise Enum.EmptyError이다.
+  """
+
+  def max(list, sorter \\ &>=/2, empty_fallback \\ fn -> raise Enum.EmptyError end)
+  def max([], _sorter, empty_fallback), do: empty_fallback.()
+  def max([h | t], sorter, empty_fallback), do: max(t, sorter, empty_fallback, h)
+
+  defp max([], _sorter, _empty_fallback, max), do: max
+
+  # 모든 구조체에 비교를 위한 compare 함수가 제공되었다는 가정하에 구현 하였습니다.
+  defp max([h | t], sorter, empty_fallback, max) when is_function(sorter) == false do
+    case sorter.compare(h, max) do
+      :gt -> max(t, sorter, empty_fallback, h)
+      :lt -> max(t, sorter, empty_fallback, max)
+      :eq -> max(t, sorter, empty_fallback, h)
+    end
+  end
+
+  defp max([h | t], sorter, empty_fallback, max) do
+    case sorter.(h, max) do
+      true -> max(t, sorter, empty_fallback, h)
+      false -> max(t, sorter, empty_fallback, max)
+    end
+  end
+
+  @doc """
+    max_by/4 주어진 요소에서 함수를 적용하여 가장 큰 요소를 반환합니다.
+    가장 큰 요소의 산출 기준은 max/1 함수와 동일하게 Erlang의 용어 순서에 따라 산출합니다.
+
+    기본적인 비교는 >= sorter 함수로 수행되고, 모든 요소가 최대로 간주되는 경우 첫번째 요소를 반환한다.
+    만약 첫번째 요소를 반환하지 않고 마지막 요소를 반환하고 싶다면 분류 함수에서 동일한 요소에 대해서 true를 반환하지 않으면 된다.
+
+    열거 가능한 항목이 비어 있으면 제공된 항목 empty_fallback이 호출된다 default 값은 fn -> raise Enum.EmptyError이다.
+  """
+
+  def max_by(list, function, sorter \\ &>=/2, empty_fallback \\ fn -> raise Enum.EmptyError end)
+  def max_by([], _fucntion, _sorter, empty_fallback), do: empty_fallback.()
+
+  def max_by([h | t], function, sorter, empty_fallback),
+    do: max_by(t, function, sorter, empty_fallback, h)
+
+  defp max_by([], _function, _sorter, _empty_fallback, max), do: max
+
+  defp max_by([h | t], function, sorter, empty_fallback, max) when is_function(sorter) == false do
+    new_h = function.(h)
+    new_max = function.(max)
+
+    case sorter.compare(new_h, new_max) do
+      :gt -> max_by(t, function, sorter, empty_fallback, h)
+      :lt -> max_by(t, function, sorter, empty_fallback, max)
+      :eq -> max_by(t, function, sorter, empty_fallback, h)
+    end
+  end
+
+  defp max_by([h | t], function, sorter, empty_fallback, max) do
+    new_h = function.(h)
+    new_max = function.(max)
+
+    case sorter.(new_h, new_max) do
+      true -> max_by(t, function, sorter, empty_fallback, h)
+      false -> max_by(t, function, sorter, empty_fallback, max)
+    end
+  end
+
+  @doc """
+    member?/2 리스트의 요소에서 주어진 element가 존재하는지 확인하는 함수
+  """
+  def member?([], _element), do: false
+
+  def member?([h | t], element) do
+    case h === element do
+      true -> true
+      false -> member?(t, element)
+    end
+  end
+
+  @doc """
+    min/3 리스트의 요소에서 가장 작은 값을 반환합니다. max/3 함수와 반대로 동작하는 함수입니다.
+    sorter가 적용되지 않으면 default 값으로 &<=/2로 비교연산을 합니다.
+    빈 리스트가 들어오면 empty_fallback를 반환합니다. default값으로 fn raise Enum.EmptyError end를 반환합니다.
+  """
+  def min(list, sorter \\ &<=/2, empty_fallback \\ fn -> raise Enum.EmptyError end)
+  def min([], _sorter, empty_fallback), do: empty_fallback.()
+  def min([h | t], sorter, empty_fallback), do: min(t, sorter, empty_fallback, h)
+
+  defp min([], _sorter, _empty_fallback, min), do: min
+
+  # 구조체가 비교를 위한 함수인 compare/2 함수를 제공한다는 가정하에 구현.
+  defp min([h | t], sorter, empty_fallback, min) when is_function(sorter) == false do
+    case sorter.compare(h, min) do
+      :gt -> min(t, sorter, empty_fallback, min)
+      :lt -> min(t, sorter, empty_fallback, h)
+      :eq -> min(t, sorter, empty_fallback, min)
+    end
+  end
+
+  defp min([h | t], sorter, empty_fallback, min) do
+    case sorter.(h, min) do
+      true -> min(t, sorter, empty_fallback, h)
+      false -> min(t, sorter, empty_fallback, min)
+    end
+  end
+
+  @doc """
+    min_by/4 리스트의 요소에서 함수를 적용하여 가장 작은 값을 반환합니다. max_by/4 함수와 반대로 동작하는 함수이다.
+    min/3 과 같이 빈 리스트가 들어오면 empty_fallback를 반환합니다.
+  """
+
+  def min_by(list, function, sorter \\ &<=/2, empty_fallback \\ fn -> raise Enum.EmptyError end)
+  def min_by([], _function, _sorter, empty_fallback), do: empty_fallback.()
+
+  def min_by([h | t], function, sorter, empty_fallback),
+    do: min_by(t, function, sorter, empty_fallback, h)
+
+  defp min_by([], _function, _sorter, _empty_fallback, min), do: min
+
+  defp min_by([h | t], function, sorter, empty_fallback, min) when is_function(sorter) == false do
+    new_h = function.(h)
+    new_min = function.(min)
+
+    case sorter.compare(new_h, new_min) do
+      :gt -> min_by(t, function, sorter, empty_fallback, min)
+      :lt -> min_by(t, function, sorter, empty_fallback, h)
+      :eq -> min_by(t, function, sorter, empty_fallback, min)
+    end
+  end
+
+  defp min_by([h | t], function, sorter, empty_fallback, min) do
+    new_h = function.(h)
+    new_min = function.(min)
+
+    case sorter.(new_h, new_min) do
+      true -> min_by(t, function, sorter, empty_fallback, h)
+      false -> min_by(t, function, sorter, empty_fallback, min)
+    end
+  end
+
+  @doc """
+    min_max/2 Erlang의 용어 순서에 따라 모든 요소를 순회하며 최소 및 최대 요소가 있는 튜플을 반환합니다.
+    모든 요소가 최대 또는 최소로 간주되는 경우 발견된 첫 번째 요소가 반환됩니다.
+  """
+  def min_max(list, empty_fallback \\ fn -> raise Enum.EmptyError end)
+  def min_max([], empty_fallback), do: empty_fallback.()
+  def min_max([h | t], _empty_fallback), do: {min_max(t, h, &<=/2), min_max(t, h, &>=/2)}
+
+  defp min_max([], mix_max_value, _sorter), do: mix_max_value
+
+  defp min_max([h | t], mix_max_value, sorter) do
+    case sorter.(h, mix_max_value) do
+      true -> min_max(t, h, sorter)
+      false -> min_max(t, mix_max_value, sorter)
+    end
+  end
+
+  @doc """
+    min_max_by/4 주어진 함수에 의해 계산된 요소중에서 최소 및 최대요소를 튜플로 반환합니다.
+    여러 요소가 최대 또는 최소로 간주되는 경우 발견된 첫 번째 요소가 반환됩니다.
+  """
+  def min_max_by(
+        list,
+        fun,
+        sorter_or_empty_fallback \\ &</2,
+        empty_fallback \\ fn -> raise Enum.EmptyError end
+      )
+
+  # sorter_or_empty_fallback에서 arity가 0인 함수는 empty_fallback이다.
+  # 왜냐하면 비교를 위한 함수는 인자가 2개 이상을 넣어야하기 때문
+  def min_max_by([], _fun, sorter_or_empty_fallback, _empty_fallback)
+      when is_function(sorter_or_empty_fallback, 0),
+      do: sorter_or_empty_fallback.()
+
+  def min_max_by([], _fun, _sorter_or_empty_fallback, empty_fallback), do: empty_fallback.()
+
+  def min_max_by([h | t], fun, sorter, _empty_fallback),
+    do: {min_max_by(t, fun, sorter, h, false), min_max_by(t, fun, sorter, h, true)}
+
+  defp min_max_by([], _fun, _sorter, min_max, _boolean), do: min_max
+
+  # 최대값을 구함.
+  defp min_max_by([h | t], fun, sorter, min_max, true) when is_function(sorter) == false do
+    new_value = fun.(h)
+    new_min_max = fun.(min_max)
+
+    case sorter.compare(new_value, new_min_max) do
+      :gt -> min_max_by(t, fun, sorter, h, true)
+      :lt -> min_max_by(t, fun, sorter, min_max, true)
+      :eq -> min_max_by(t, fun, sorter, min_max, true)
+    end
+  end
+
+  # 최소값을 구함.
+  defp min_max_by([h | t], fun, sorter, min_max, false) when is_function(sorter) == false do
+    new_value = fun.(h)
+    new_min_max = fun.(min_max)
+
+    case sorter.compare(new_value, new_min_max) do
+      :gt -> min_max_by(t, fun, sorter, min_max, false)
+      :lt -> min_max_by(t, fun, sorter, h, false)
+      :eq -> min_max_by(t, fun, sorter, min_max, false)
+    end
+  end
+
+  # 최대값을 구함.
+  defp min_max_by([h | t], fun, sorter, min_max, true) do
+    new_value = fun.(h)
+    new_min_max = fun.(min_max)
+
+    case sorter.(new_value, new_min_max) do
+      true -> min_max_by(t, fun, sorter, min_max, true)
+      false -> min_max_by(t, fun, sorter, h, true)
+    end
+  end
+
+  # 최소값을 구함.
+  defp min_max_by([h | t], fun, sorter, min_max, false) do
+    new_value = fun.(h)
+    new_min_max = fun.(min_max)
+
+    case sorter.(new_value, new_min_max) do
+      true -> min_max_by(t, fun, sorter, h, false)
+      false -> min_max_by(t, fun, sorter, min_max, false)
+    end
+  end
 end
