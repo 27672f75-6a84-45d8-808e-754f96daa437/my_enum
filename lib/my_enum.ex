@@ -775,9 +775,7 @@ defmodule MyEnum do
     cond do
       # sorter가 &</2로 제공되므로 같은 값인 경우를 대비하여 한번의 체크가 필요하다.
       new_value === new_min_max -> min_max_by(t, fun, sorter, min_max, :max)
-
       sorter.(new_value, new_min_max) -> min_max_by(t, fun, sorter, min_max, :max)
-
       !sorter.(new_value, new_min_max) -> min_max_by(t, fun, sorter, h, :max)
     end
   end
