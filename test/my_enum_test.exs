@@ -814,11 +814,9 @@ defmodule MyEnumTest do
       assert {5, 1} == MyEnum.min_max_by([1, 2, 3, 4, 5], fn x -> -x end)
     end
 
-    # 공식문서에서 sort값이 default 값으로 &</2 가 제공되는데
-    # 이 경우에 모든 요소가 같은 값인 상태일 때 max 값의 경우 발견되는 첫번째 요소를 반환 할 수 없는데 어떻게 해결 할 수 있을까요?
-    # test "여러 요소가 최대 또는 최소로 간주되는 경우 발견된 첫 번째 요소를 반환합니다." do
-    #   assert {"aaa", "aaa"} == MyEnum.min_max_by(["aaa","bbb","ccc","ddd","eee"], &String.length/1 )
-    # end
+    test "여러 요소가 최대 또는 최소로 간주되는 경우 발견된 첫 번째 요소를 반환합니다." do
+      assert {"aaa", "aaa"} == MyEnum.min_max_by(["aaa","bbb","ccc","ddd","eee"], &String.length/1 )
+    end
 
     test "Sorter로 구조체가 전달될 경우 구조체내의 Compare 함수를 사용하여 요소의 최소값과 최대값을 튜플로 반환합니다." do
       assert {%{birthday: ~D[1815-12-10], name: "Tinker"},

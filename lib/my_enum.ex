@@ -571,7 +571,8 @@ defmodule MyEnum do
   defp max([], _sorter, _empty_fallback, max), do: max
 
   # 모든 구조체에 비교를 위한 compare 함수가 제공되었다는 가정하에 구현 하였습니다.
-  defp max([h | t], sorter, empty_fallback, max) when is_function(sorter) == false do
+  # 모듈명은 atom이기 때문에 sorter가 function이 아닌경우를 체크할 수 있다.
+  defp max([h | t], sorter, empty_fallback, max) when is_atom(sorter) do
     case sorter.compare(h, max) do
       :gt -> max(t, sorter, empty_fallback, h)
       :lt -> max(t, sorter, empty_fallback, max)
@@ -604,7 +605,8 @@ defmodule MyEnum do
 
   defp max_by([], _function, _sorter, _empty_fallback, max), do: max
 
-  defp max_by([h | t], function, sorter, empty_fallback, max) when is_function(sorter) == false do
+  # 모듈명은 atom이기 때문에 sorter가 function이 아닌경우를 체크할 수 있다.
+  defp max_by([h | t], function, sorter, empty_fallback, max) when is_atom(sorter) do
     new_h = function.(h)
     new_max = function.(max)
 
@@ -649,7 +651,8 @@ defmodule MyEnum do
   defp min([], _sorter, _empty_fallback, min), do: min
 
   # 구조체가 비교를 위한 함수인 compare/2 함수를 제공한다는 가정하에 구현.
-  defp min([h | t], sorter, empty_fallback, min) when is_function(sorter) == false do
+  # 모듈명은 atom이기 때문에 sorter가 function이 아닌경우를 체크할 수 있다.
+  defp min([h | t], sorter, empty_fallback, min) when is_atom(sorter) do
     case sorter.compare(h, min) do
       :gt -> min(t, sorter, empty_fallback, min)
       :lt -> min(t, sorter, empty_fallback, h)
@@ -677,7 +680,8 @@ defmodule MyEnum do
 
   defp min_by([], _function, _sorter, _empty_fallback, min), do: min
 
-  defp min_by([h | t], function, sorter, empty_fallback, min) when is_function(sorter) == false do
+  # 모듈명은 atom이기 때문에 sorter가 function이 아닌경우를 체크할 수 있다.
+  defp min_by([h | t], function, sorter, empty_fallback, min) when is_atom(sorter) do
     new_h = function.(h)
     new_min = function.(min)
 
@@ -735,53 +739,58 @@ defmodule MyEnum do
   def min_max_by([], _fun, _sorter_or_empty_fallback, empty_fallback), do: empty_fallback.()
 
   def min_max_by([h | t], fun, sorter, _empty_fallback),
-    do: {min_max_by(t, fun, sorter, h, false), min_max_by(t, fun, sorter, h, true)}
+    do: {min_max_by(t, fun, sorter, h, :min), min_max_by(t, fun, sorter, h, :max)}
 
-  defp min_max_by([], _fun, _sorter, min_max, _boolean), do: min_max
+  defp min_max_by([], _fun, _sorter, min_max, _get_min_max_mode), do: min_max
 
   # 최대값을 구함.
-  defp min_max_by([h | t], fun, sorter, min_max, true) when is_function(sorter) == false do
+  defp min_max_by([h | t], fun, sorter, min_max, :max) when is_atom(sorter) do
     new_value = fun.(h)
     new_min_max = fun.(min_max)
 
     case sorter.compare(new_value, new_min_max) do
-      :gt -> min_max_by(t, fun, sorter, h, true)
-      :lt -> min_max_by(t, fun, sorter, min_max, true)
-      :eq -> min_max_by(t, fun, sorter, min_max, true)
+      :gt -> min_max_by(t, fun, sorter, h, :max)
+      :lt -> min_max_by(t, fun, sorter, min_max, :max)
+      :eq -> min_max_by(t, fun, sorter, min_max, :max)
     end
   end
 
   # 최소값을 구함.
-  defp min_max_by([h | t], fun, sorter, min_max, false) when is_function(sorter) == false do
+  defp min_max_by([h | t], fun, sorter, min_max, :min) when is_atom(sorter) do
     new_value = fun.(h)
     new_min_max = fun.(min_max)
 
     case sorter.compare(new_value, new_min_max) do
-      :gt -> min_max_by(t, fun, sorter, min_max, false)
-      :lt -> min_max_by(t, fun, sorter, h, false)
-      :eq -> min_max_by(t, fun, sorter, min_max, false)
+      :gt -> min_max_by(t, fun, sorter, min_max, :min)
+      :lt -> min_max_by(t, fun, sorter, h, :min)
+      :eq -> min_max_by(t, fun, sorter, min_max, :min)
     end
   end
 
   # 최대값을 구함.
-  defp min_max_by([h | t], fun, sorter, min_max, true) do
+  defp min_max_by([h | t], fun, sorter, min_max, :max) do
     new_value = fun.(h)
     new_min_max = fun.(min_max)
 
-    case sorter.(new_value, new_min_max) do
-      true -> min_max_by(t, fun, sorter, min_max, true)
-      false -> min_max_by(t, fun, sorter, h, true)
+    cond do
+      # sorter가 &</2로 제공되므로 같은 값인 경우를 대비하여 한번의 체크가 필요하다.
+      new_value === new_min_max -> min_max_by(t, fun, sorter, min_max, :max)
+
+      sorter.(new_value, new_min_max) -> min_max_by(t, fun, sorter, min_max, :max)
+
+      !sorter.(new_value, new_min_max) -> min_max_by(t, fun, sorter, h, :max)
     end
   end
 
   # 최소값을 구함.
-  defp min_max_by([h | t], fun, sorter, min_max, false) do
+  defp min_max_by([h | t], fun, sorter, min_max, :min) do
     new_value = fun.(h)
     new_min_max = fun.(min_max)
 
+    # 최소값의 경우에는 같으면 기존의 최소값을 넣으면 되기때문에 같은 값에 대한 처리가 필요없음.
     case sorter.(new_value, new_min_max) do
-      true -> min_max_by(t, fun, sorter, h, false)
-      false -> min_max_by(t, fun, sorter, min_max, false)
+      true -> min_max_by(t, fun, sorter, h, :min)
+      false -> min_max_by(t, fun, sorter, min_max, :min)
     end
   end
 end
