@@ -682,4 +682,155 @@ defmodule MyEnumTest do
                MyEnum.map_reduce([1, 2, 3, 4, 5], 0, fn x, acc -> {x * 2, x + acc} end)
     end
   end
+
+  describe "MyEnum.max/3 tests" do
+    test "빈 리스트가 주어지면 empty_fallback를 반환합니다." do
+      assert 0 == MyEnum.max([], &>=/2, fn -> 0 end)
+    end
+
+    test "Erlang의 용어 순서에 따라 가장 큰 값을 산출합니다. " do
+      assert "7" == MyEnum.max([1, :b, {3}, %{d: 5}, [6], "7"])
+    end
+
+    test "모든 요소의 값이 같다면 첫번째로 가장 큰 요소를 반환합니다." do
+      assert 1 == MyEnum.max([1, 1, 1, 1, 1, 1, 1, 1, 1])
+    end
+
+    test "주어진 비교 함수를 통해서 가장 큰 요소를 구합니다." do
+      assert ~D[2017-04-01] == MyEnum.max([~D[2017-03-31], ~D[2017-04-01]], Date)
+    end
+  end
+
+  describe "MyEnum.max_by/4 tests" do
+    test "빈 리스트가 주어지면 empty_fallback를 반환합니다." do
+      assert 0 == MyEnum.max_by([], fn x -> -x end, &>=/2, fn -> 0 end)
+    end
+
+    test "주어진 요소에 함수를 적용하여 가장 큰 요소를 반환합니다." do
+      assert 1 == MyEnum.max_by([1, 2, 3, 4, 5, 6, 7], fn x -> -x end)
+    end
+
+    test "모두가 같은 요소일때 주어진 sort가 모든 요소에 대해서 true 이면 가장 마지막 요소를 반환한다." do
+      assert "eee" ==
+               MyEnum.max_by(
+                 ["abc", "aaa", "cba", "dac", "sss", "fff", "eee"],
+                 fn x -> String.length(x) end
+               )
+    end
+
+    test "모두가 같은 요소일때 주어진 sort가 모든 요소에 대해서 true를 반환하지 않으면 가장 첫번째 요소를 반환합니다." do
+      assert "abc" ==
+               MyEnum.max_by(
+                 ["abc", "aaa", "cba", "dac", "sss", "fff", "eee"],
+                 fn x -> String.length(x) end,
+                 &>/2
+               )
+    end
+  end
+
+  describe "MyEnum.member?/2 tests" do
+    test "빈 리스트가 주어지면 false를 반환합니다." do
+      assert false == MyEnum.member?([], 1)
+    end
+
+    test "리스트를 순회하며 element를 찾고 존재하면 true를 반환합니다." do
+      assert true == MyEnum.member?([1, 2, 3, 4, 5], 5)
+    end
+
+    test "리스트를 순회하며 element를 찾고 존재하지 않으면 false를 반환합니다." do
+      assert false == MyEnum.member?([1, 2, 3, 4, 5], 1.0)
+    end
+  end
+
+  describe "MyEnum.min/3 tests" do
+    test "빈 리스트가 주어지면 empty_fallback을 반환합니다." do
+      assert 0 == MyEnum.min([], &<=/2, fn -> 0 end)
+    end
+
+    test "주어진 요소중에서 가장 작은 값을 반환합니다." do
+      assert 1 == MyEnum.min([2, 5, 6, 1, 4, 3])
+    end
+
+    test "주어진 요소중에서 가장 작은 값을 반환합니다. sorter에 구조체를 넣으면 구조체 비교 함수를 통해 비교합니다." do
+      assert ~D[2022-04-11] == MyEnum.min([~D[2022-04-11], ~D[2023-02-07]], Date)
+    end
+  end
+
+  describe "MyEnum.min_by/4 tests" do
+    test "빈 리스트가 주어지면 empty_fallback를 반환합니다." do
+      assert 0 == MyEnum.min_by([], fn x -> -x end, &>=/2, fn -> 0 end)
+    end
+
+    test "주어진 요소에 함수를 적용하여 가장 작은 요소를 반환합니다." do
+      assert 7 == MyEnum.min_by([1, 2, 3, 4, 5, 6, 7], fn x -> -x end)
+    end
+
+    test "모두가 같은 요소일때 주어진 sort가 모든 요소에 대해서 true 이면 가장 마지막 요소를 반환한다." do
+      assert "eee" ==
+               MyEnum.min_by(
+                 ["abc", "aaa", "cba", "dac", "sss", "fff", "eee"],
+                 fn x -> String.length(x) end
+               )
+    end
+
+    test "모두가 같은 요소일때 주어진 sort가 모든 요소에 대해서 true를 반환하지 않으면 가장 첫번째 요소를 반환합니다." do
+      assert "abc" ==
+               MyEnum.min_by(
+                 ["abc", "aaa", "cba", "dac", "sss", "fff", "eee"],
+                 fn x -> String.length(x) end,
+                 &>/2
+               )
+    end
+  end
+
+  describe "MyEnum.min_max/2 tests" do
+    test "빈 리스트가 주어지면 empty_fallback를 반환합니다." do
+      assert {nil, nil} == MyEnum.min_max([], fn -> {nil, nil} end)
+    end
+
+    test "요소에서 가장 작은 값과 큰 값을 튜플로 반환합니다." do
+      assert {1, 10} == MyEnum.min_max([4, 3, 5, 7, 8, 1, 9, 10, 6])
+    end
+
+    test "요소에서 가장 작은 값과 큰 값을 튜플로 반환합니다. Erlang의 용어 순서에 따라 산출합니다." do
+      assert {1, [1]} == MyEnum.min_max([4, 3, 5, :a, 1, 9, 10, [1]])
+    end
+
+    test "요소가 모두 같다면 발견된 첫 번째 요소가 반환됩니다." do
+      assert {1, 1} == MyEnum.min_max([1, 1, 1, 1, 1, 1, 1, 1, 1])
+    end
+  end
+
+  describe "MyEnum.min_max_by/4 tests" do
+    test "sorter가 empty_fallback으로 제공되었을때 빈 리스트가 주어졌다면 sorter를 반환합니다" do
+      assert {nil, nil} == MyEnum.min_max_by([], fn x -> x end, fn -> {nil, nil} end)
+    end
+
+    test "빈 리스트가 주어지면 empty_fallback을 반환합니다." do
+      assert {nil, nil} == MyEnum.min_max_by([], fn x -> x end, &>=/2, fn -> {nil, nil} end)
+    end
+
+    test "주어진 함수에 의해 계산된 요소중에서 최소값과 최대값을 튜플로 반환합니다." do
+      assert {5, 1} == MyEnum.min_max_by([1, 2, 3, 4, 5], fn x -> -x end)
+    end
+
+    test "여러 요소가 최대 또는 최소로 간주되는 경우 발견된 첫 번째 요소를 반환합니다." do
+      assert {"aaa", "aaa"} ==
+               MyEnum.min_max_by(["aaa", "bbb", "ccc", "ddd", "eee"], &String.length/1)
+    end
+
+    test "Sorter로 구조체가 전달될 경우 구조체내의 Compare 함수를 사용하여 요소의 최소값과 최대값을 튜플로 반환합니다." do
+      assert {%{birthday: ~D[1815-12-10], name: "Tinker"},
+              %{birthday: ~D[1943-05-11], name: "Ellis"}} ==
+               MyEnum.min_max_by(
+                 [
+                   %{name: "Ellis", birthday: ~D[1943-05-11]},
+                   %{name: "Tinker", birthday: ~D[1815-12-10]},
+                   %{name: "Peter", birthday: ~D[1912-06-23]}
+                 ],
+                 & &1.birthday,
+                 Date
+               )
+    end
+  end
 end
