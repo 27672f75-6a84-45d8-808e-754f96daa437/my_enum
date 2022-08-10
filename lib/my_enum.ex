@@ -1083,6 +1083,4 @@ defmodule MyEnum do
 
   defp with_index([h | t], fun, result, offset),
     do: with_index(t, fun, result ++ [fun.(h, offset)], offset + 1)
-
-
 end
