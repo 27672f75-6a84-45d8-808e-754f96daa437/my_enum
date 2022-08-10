@@ -833,4 +833,426 @@ defmodule MyEnumTest do
                )
     end
   end
+
+  describe "MyEnum.product/1 tests" do
+    test "제공한 리스트가 비어있다면 1를 반환합니다." do
+      assert 1 == MyEnum.product([])
+    end
+
+    test "모든 요소를 곱해 반환합니다." do
+      assert 24 == MyEnum.product([2, 3, 4])
+    end
+
+    test "모든 요소를 곱해 반환합니다.2" do
+      assert 24.0 == MyEnum.product([2.0, 3.0, 4.0])
+    end
+
+    test "모든 요소를 곱해 반환합니다.3" do
+      assert 0 == MyEnum.product([2, 3, 4, 0])
+    end
+  end
+
+  describe "MyEnum.reduce/3 tests" do
+    test "제공한 리스트가 비어있다면 acc를 반환합니다." do
+      acc = 1
+      assert acc == MyEnum.reduce([], acc, fn x, acc -> x + acc end)
+    end
+
+    test "모든 요소에 함수를 적용하여 누산된 결과를 반환합니다." do
+      assert -10 == MyEnum.reduce([1, 2, 3, 4], 0, fn x, acc -> -x + acc end)
+    end
+
+    test "모든 요소에 함수를 적용하여 누산된 결과를 반환합니다. 2" do
+      assert 6 == MyEnum.reduce([1, 2, 3], 0, fn x, acc -> x + acc end)
+    end
+  end
+
+  describe "MyEnum.reduce_while/3 tests" do
+    test "제공한 리스트가 비어있다면 acc를 반환합니다." do
+      acc = 5
+      assert acc == MyEnum.reduce_while([], acc, fn x, acc -> x + acc end)
+    end
+
+    test "함수의 결과로 {:cont, acc} 만 반환된다면 모든 요소를 순회하여 누산된 결과를 반환합니다." do
+      assert 15 ==
+               MyEnum.reduce_while([1, 2, 3, 4, 5], 0, fn x, acc ->
+                 if x > 0, do: {:cont, acc + x}, else: {:halt, acc}
+               end)
+    end
+
+    test "함수의 결과로 도중에 {:halt, acc} 가 반환된다면 그 즉시 acc를 반환합니다." do
+      assert 3 ==
+               MyEnum.reduce_while([1, 2, 3, 4, 5], 0, fn x, acc ->
+                 if x < 3, do: {:cont, acc + x}, else: {:halt, acc}
+               end)
+    end
+  end
+
+  describe "MyEnum.reject/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.reject([], fn x -> x > 3 end)
+    end
+
+    test "함수의 결과로 false 값을 반환하는 요소들만 리스트로 반환합니다." do
+      assert [1, 2, 3] == MyEnum.reject([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], fn x -> x > 3 end)
+    end
+
+    test "함수의 결과로 false 값을 반환하는 요소들만 리스트로 반환합니다. 2" do
+      assert ["aa", "bb", "c"] ==
+               MyEnum.reject(["aa", "bb", "c", "dddd", "eeee", "ffff"], fn x ->
+                 String.length(x) > 3
+               end)
+    end
+  end
+
+  describe "MyEnum.reverse_slice/3 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.reverse_slice([], 2, 2)
+    end
+
+    test "count가 0이라면 리스트를 그대로 반환합니다." do
+      assert [1, 2, 3, 4, 5, 6, 7] == MyEnum.reverse_slice([1, 2, 3, 4, 5, 6, 7], 2, 0)
+    end
+
+    test "count가 리스트 요소 개수보다 크고 start_index가 주어지면 해당 index 부터 모든 요소를 뒤집어 반환합니다." do
+      assert [7, 6, 5, 4, 3, 2, 1] == MyEnum.reverse_slice([1, 2, 3, 4, 5, 6, 7], 0, 100)
+    end
+
+    test "start_index 부터 count 만큼 요소를 뒤집어 반환합니다." do
+      assert [1, 2, 4, 3, 5, 6, 7] == MyEnum.reverse_slice([1, 2, 3, 4, 5, 6, 7], 2, 2)
+    end
+
+    test "start_index 부터 count 만큼 요소를 뒤집어 반환합니다.2" do
+      assert [1, 2, 3, 6, 5, 4, 7] == MyEnum.reverse_slice([1, 2, 3, 4, 5, 6, 7], 3, 3)
+    end
+
+    test "start_index 부터 count 만큼 요소를 뒤집어 반환합니다.3" do
+      assert [1, 2, 6, 5, 4, 3, 7] == MyEnum.reverse_slice([1, 2, 3, 4, 5, 6, 7], 2, 4)
+    end
+
+    test "start_index 부터 count 만큼 요소를 뒤집어 반환합니다.4" do
+      assert [1, 2, 3, 4, 5, 6, 7] == MyEnum.reverse_slice([1, 2, 3, 4, 5, 6, 7], 100, 100)
+    end
+  end
+
+  describe "MyEnum.scan/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.scan([], &(&1 + &2))
+    end
+
+    test "주어진 함수를 적용한 요소의 결과를 저장하고 다음 계산을 위한 누산기로 사용합니다." do
+      assert [1, 3, 6, 10, 15] == MyEnum.scan([1, 2, 3, 4, 5], &(&1 + &2))
+    end
+
+    test "주어진 함수를 적용한 요소의 결과를 저장하고 다음 계산을 위한 누산기로 사용합니다.2" do
+      assert [0, 0, 0, 0, 0] == MyEnum.scan([0, 2, 3, 4, 5], &(&1 * &2))
+    end
+
+    test "주어진 함수를 적용한 요소의 결과를 저장하고 다음 계산을 위한 누산기로 사용합니다.3" do
+      assert [1, 2, 6, 24, 120] == MyEnum.scan([1, 2, 3, 4, 5], &(&1 * &2))
+    end
+  end
+
+  describe "MyEnum.scan/3 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.scan([], 1, &(&1 + &2))
+    end
+
+    test "주어진 함수를 적용한 요소의 결과를 저장하고 제공한 acc 값을 누산기로 사용합니다." do
+      assert [1, 3, 6, 10, 15] == MyEnum.scan([1, 2, 3, 4, 5], 0, &(&1 + &2))
+    end
+
+    test "주어진 함수를 적용한 요소의 결과를 저장하고 제공한 acc 값을 누산기로 사용합니다.2" do
+      assert [0, 0, 0, 0, 0] == MyEnum.scan([1, 2, 3, 4, 5], 0, &(&1 * &2))
+    end
+
+    test "주어진 함수를 적용한 요소의 결과를 저장하고 제공한 acc 값을 누산기로 사용합니다.3" do
+      assert [0, 2, 1, 3, 2] == MyEnum.scan([1, 2, 3, 4, 5], 1, &(&1 - &2))
+    end
+  end
+
+  describe "MyEnum.slice/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.slice([], 1..2)
+    end
+
+    test "제공한 리스트에서 index_range만큼 요소를 잘라내어 반환합니다." do
+      assert [2, 3, 4, 5, 6] == MyEnum.slice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 1..5)
+    end
+
+    test "제공한 리스트에서 index_range만큼 요소를 잘라내어 반환합니다. index_range.last가 요소보다 크면 최대한 잘라냅니다." do
+      assert [2, 3, 4, 5, 6, 7, 8, 9, 10] == MyEnum.slice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 1..100)
+    end
+
+    test "제공한 리스트에서 index_range.first가 요소의 범위를 벗어나면 []를 반환합니다." do
+      assert [] == MyEnum.slice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 100..1)
+    end
+
+    test "제공한 리스트에서 index_range.first가 음수일 때 요소의 뒷부분부터 잘라냅니다." do
+      assert '\a\b\t' == MyEnum.slice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], -4..-2)
+    end
+
+    test "제공한 리스트에서 index_range.first가 음수일 때 요소의 뒷부분부터 잘라냅니다.2" do
+      assert [2, 3] == MyEnum.slice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], -9..-8)
+    end
+  end
+
+  describe "MyEnum.slice/3 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.slice([], 2, 3)
+    end
+
+    test "제공한 리스트에서 start_index부터 시작하여 amount 만큼 잘라냅니다." do
+      assert [2, 3, 4, 5, 6] == MyEnum.slice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 1, 5)
+    end
+
+    test "제공한 리스트에서 start_index부터 시작하여 amount 만큼 잘라냅니다. amount가 요소 범위보다 크면 최대한 잘라냅니다." do
+      assert [2, 3, 4, 5, 6, 7, 8, 9, 10] == MyEnum.slice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 1, 100)
+    end
+
+    test "제공한 start_index가 요소의 범위를 벗어나면 []를 반환합니다." do
+      assert [] == MyEnum.slice([1, 2, 3, 4, 5, 6, 7], 100, 1)
+    end
+
+    test "제공한 start_index가 음수라면 요소의 마지막부터 순서를 새나가 amount만큼 잘라냅니다." do
+      assert '\a\b' == MyEnum.slice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], -4, 2)
+    end
+
+    test "제공한 start_index가 음수라면 요소의 마지막부터 순서를 새나가 amount만큼 잘라냅니다. amount가 요소의 범위를 넘으면 최대한 잘라냅니다." do
+      assert '\a\b\t\n' == MyEnum.slice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], -4, 100)
+    end
+
+    test "제공한 start_index가 음수이면서 요소의 범위를 벗어나면 []를 반환합니다." do
+      assert [] == MyEnum.slice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], -100, 3)
+    end
+  end
+
+  describe "MyEnum.split/2 tests" do
+    test "제공한 리스트가 비어있다면 {[], []} 를 반환합니다." do
+      assert {[], []} == MyEnum.split([], 10)
+    end
+
+    test "count가 양수일때는 left에 남겨질 요소의 개수를 뜻합니다." do
+      assert {[1, 2, 3], [4, 5]} == MyEnum.split([1, 2, 3, 4, 5], 3)
+    end
+
+    test "count가 양수이면서 요소의 개수 범위보다 크면 모든 요소가 left에 들어갑니다." do
+      assert {[1, 2, 3, 4, 5], []} == MyEnum.split([1, 2, 3, 4, 5], 100)
+    end
+
+    test "count가 음수일때는 right에 남겨질 요소의 개수를 뜻합니다." do
+      assert {[1, 2], [3, 4, 5]} == MyEnum.split([1, 2, 3, 4, 5], -3)
+    end
+
+    test "count가 음수이면서 요소의 개수 범위보다 크면 모든 요소가 right에 들어갑니다." do
+      assert {[], [1, 2, 3, 4, 5]} == MyEnum.split([1, 2, 3, 4, 5], -1100)
+    end
+  end
+
+  describe "MyEnum.split_while/2 tests" do
+    test "제공한 리스트가 비어있다면 {[], []}를 반환합니다." do
+      assert {[], []} == MyEnum.split_while([], fn x -> x end)
+    end
+
+    test "함수의 호출 결과로 false가 나올때까지 요소를 left에 넣고 false가 되는 요소를 만나면 그 이후값은 right에 넣습니다." do
+      assert {[1, 2], [3, 4]} == MyEnum.split_while([1, 2, 3, 4], fn x -> x < 3 end)
+    end
+
+    test "함수의 호출 결과로 false가 나올때까지 요소를 left에 넣고 false가 되는 요소를 만나면 그 이후값은 right에 넣습니다.2" do
+      assert {["aa", "bb"], ["ccc", "ddd", "ee"]} ==
+               MyEnum.split_while(["aa", "bb", "ccc", "ddd", "ee"], fn x ->
+                 String.length(x) == 2
+               end)
+    end
+
+    test "모든 요소가 함수에 true로 만족하면 left에 요소를 넣습니다." do
+      assert {[1, 2, 3, 4, 5, 6, 7], []} ==
+               MyEnum.split_while([1, 2, 3, 4, 5, 6, 7], fn _ -> true end)
+    end
+
+    test "처음 만난 요소가 false이면 모든 요소를 right에 넣습니다." do
+      assert {[], [1, 2, 3, 4, 5, 6, 7]} ==
+               MyEnum.split_while([1, 2, 3, 4, 5, 6, 7], fn _ -> false end)
+    end
+  end
+
+  describe "MyEnum.split_with/2 tests" do
+    test "제공한 리스트가 비어있다면 {[], []}를 반환합니다." do
+      assert {[], []} == MyEnum.split_with(%{}, fn {_k, v} -> v > 50 end)
+    end
+
+    test "함수에 true 한 값은 left false 한 값은 right에 넣어 반환합니다." do
+      assert {[4, 2, 0], [5, 3, 1]} ==
+               MyEnum.split_with([5, 4, 3, 2, 1, 0], fn x -> rem(x, 2) == 0 end)
+    end
+
+    test "함수에 true 한 값은 left false 한 값은 right에 넣어 반환합니다.2" do
+      assert {[b: -2, d: -3], [a: 1, c: 1]} ==
+               MyEnum.split_with(%{a: 1, b: -2, c: 1, d: -3}, fn {_k, v} -> v < 0 end)
+    end
+
+    test "함수에 true 한 값은 left false 한 값은 right에 넣어 반환합니다.3" do
+      assert {[], [a: 1, b: -2, c: 1, d: -3]} ==
+               MyEnum.split_with(%{a: 1, b: -2, c: 1, d: -3}, fn {_k, v} -> v > 50 end)
+    end
+  end
+
+  describe "MyEnum.sum/1 tests" do
+    test "제공한 리스트가 비어있다면 0을 반환합니다." do
+      assert 0 == MyEnum.sum([])
+    end
+
+    test "요소를 모두 더 한 값을 반환합니다." do
+      assert 21 == MyEnum.sum([1, 2, 3, 4, 5, 6])
+    end
+  end
+
+  describe "MyEnum.take/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.take([], 100)
+    end
+
+    test "제공한 amount가 0이라면 []를 반환합니다." do
+      assert [] == MyEnum.take([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0)
+    end
+
+    test "제공한 리스트에서 amount 만큼 요소를 반환합니다." do
+      assert [1, 2] == MyEnum.take([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2)
+    end
+
+    test "제공한 리스트에서 amount가 요소의 범위 보다 크다면 모든 요소를 반환합니다." do
+      assert [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] == MyEnum.take([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 100)
+    end
+
+    test "제공한 리스트에서 amount가 음수라면 요소의 끝에서부터 값을 가져옵니다." do
+      assert [8, 9, 10] == MyEnum.take([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], -3)
+    end
+
+    test "제공한 리스트에서 amount가 음수이면서 요소의 범위 보다 크다면 모든 요소를 반환합니다." do
+      assert [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] == MyEnum.take([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], -100)
+    end
+  end
+
+  describe "MyEnum.take_every/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.take_every([], 2)
+    end
+
+    test "제공한 nth가 0이라면 []를 반환합니다." do
+      assert [] == MyEnum.take_every([1, 2, 3, 4, 5, 6], 0)
+    end
+
+    test "제공한 nth가 1이라면 리스트를 다시 되돌려 반환합니다." do
+      assert [1, 2, 3, 4, 5] == MyEnum.take_every([1, 2, 3, 4, 5], 1)
+    end
+
+    test "요소에서 nth 간격만큼 요소를 가져옵니다." do
+      assert [1, 3, 5, 7, 9] == MyEnum.take_every([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2)
+    end
+  end
+
+  describe "MyEnum.take_while/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.take_while([], fn _ -> true end)
+    end
+
+    test "함수를 호출하여 나온값이 false가 될때까지의 요소를 반환합니다." do
+      assert [1, 2, 3, 4, 5] ==
+               MyEnum.take_while([1, 2, 3, 4, 5, "aa", 6, 7, 8, 9, 10], fn x -> is_number(x) end)
+    end
+
+    test "첫 요소가 함수호출에 false값이면 []를 반환합니다." do
+      assert [] ==
+               MyEnum.take_while([1, 2, 3, 4, 5, "aa", 6, 7, 8, 9, 10], fn x -> is_binary(x) end)
+    end
+  end
+
+  describe "MyEnum.uniq/1 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.uniq([])
+    end
+
+    test "리스트에서 중복된 요소를 제거합니다." do
+      assert [1, 2, 3] == MyEnum.uniq([1, 2, 3, 3, 2, 1])
+    end
+
+    test "리스트에서 중복된 요소를 제거합니다.2" do
+      assert ["a", "b", "d", "e", "c"] == MyEnum.uniq(["a", "b", "d", "a", "e", "c", "c", "e"])
+    end
+
+    test "리스트에서 중복된 요소를 제거합니다.3" do
+      assert [1, 5, 4, :a, 3, 2, :b, :c] ==
+               MyEnum.uniq([1, 5, 4, :a, 3, 1, 2, :b, 2, :c, :a, 1, 2, 3, 4])
+    end
+  end
+
+  describe "MyEnum.uniq_by/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.uniq_by([], fn x -> x end)
+    end
+
+    test "요소의 첫 번째 항목은 유지하며 함수 호출의 결과가 중복되는 요소를 모두 제거하여 반환합니다." do
+      assert [1] == MyEnum.uniq_by([1, 2, 3, 4, 5], fn _ -> true end)
+    end
+
+    test "요소의 첫 번째 항목은 유지하며 함수 호출의 결과가 중복되는 요소를 모두 제거하여 반환합니다.2" do
+      assert [1, 2] == MyEnum.uniq_by([1, 2, 3, 4, 5], fn x -> rem(x, 2) == 0 end)
+    end
+
+    test "요소의 첫 번째 항목은 유지하며 함수 호출의 결과가 중복되는 요소를 모두 제거하여 반환합니다.3" do
+      assert [{1, :x}, {2, :y}] == MyEnum.uniq_by([{1, :x}, {2, :y}, {1, :z}], fn {x, _} -> x end)
+    end
+
+    test "요소의 첫 번째 항목은 유지하며 함수 호출의 결과가 중복되는 요소를 모두 제거하여 반환합니다.4" do
+      assert [a: {:tea, 2}, c: {:coffee, 1}] ==
+               MyEnum.uniq_by([a: {:tea, 2}, b: {:tea, 2}, c: {:coffee, 1}], fn {_, y} -> y end)
+    end
+  end
+
+  describe "MyEnum.unzip/1 tests" do
+    test "제공한 리스트가 비어있다면 {[], []}를 반환합니다." do
+      assert {[], []} == MyEnum.unzip([])
+    end
+
+    test "각 요소에서 튜플의 2개의 요소를 추출하여 {[left], [right]}를 반환합니다." do
+      assert {[:a, :b, :c], [1, 2, 3]} == MyEnum.unzip([{:a, 1}, {:b, 2}, {:c, 3}])
+    end
+
+    test "각 요소에서 튜플의 2개의 요소를 추출하여 {[left], [right]}를 반환합니다.2" do
+      assert {[:a, :b, :c, :d], [1, 2, 3, 4]} ==
+               MyEnum.unzip([{:a, 1}, {:b, 2}, {:c, 3}, {:d, 4}])
+    end
+
+    test "각 요소에서 튜플의 2개의 요소를 추출하여 {[left], [right]}를 반환합니다.3" do
+      assert {[:a, :b, 5, :d], [1, 2, :c, 4]} ==
+               MyEnum.unzip([{:a, 1}, {:b, 2}, {5, :c}, {:d, 4}])
+    end
+
+    test "맵의 각 요소에서 튜플의 2개의 요소를 추출하여 {[left], [right]}를 반환합니다." do
+      assert {[:a, :b], [1, 2]} == MyEnum.unzip(%{a: 1, b: 2})
+    end
+  end
+
+  describe "MyEnum.with_index/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.with_index([])
+    end
+
+    test "각 요소들을 index와 매칭하여 튜플에 래핑된 각 요소를 반환합니다. index가 주어지지 않으면 0입니다." do
+      assert [a: 0, b: 1, c: 2] == MyEnum.with_index([:a, :b, :c])
+    end
+
+    test "각 요소들을 index와 매칭하여 튜플에 래핑된 각 요소를 반환합니다." do
+      assert [a: 3, b: 4, c: 5] == MyEnum.with_index([:a, :b, :c], 3)
+    end
+
+    test "각 요소들을 index와 매칭하여 튜플에 래핑된 각 요소를 반환합니다.2" do
+      assert [{1, 3}, {2, 4}, {3, 5}] == MyEnum.with_index([1, 2, 3], 3)
+    end
+
+    test "fun으로 제공된 함수를 호출하여 나온 요소를 index 와 매칭하여 튜플에 래핑된 각 요소를 반환합니다." do
+      assert [{0, :a}, {1, :b}, {2, :c}] ==
+               MyEnum.with_index([:a, :b, :c], fn element, index -> {index, element} end)
+    end
+  end
 end
