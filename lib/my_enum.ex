@@ -796,9 +796,7 @@ defmodule MyEnum do
     product/1 모든 요소를 곱한 값을 반환합니다
   """
   def product([]), do: 1
-  def product([h | t]), do: product(t, [h])
-  defp product([], [result_h | _result_t]), do: result_h
-  defp product([h | t], [vh | _vt]), do: product(t, [vh * h])
+  def product([h | t]), do: h * product(t)
 
   @doc """
     reduce/2 모든 요소에 함수를 적용하여 나온값을 누산하여 반환합니다.
