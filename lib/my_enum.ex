@@ -791,4 +791,294 @@ defmodule MyEnum do
       false -> min_max_by(t, fun, sorter, min_max, :min)
     end
   end
+
+  @doc """
+    product/1 모든 요소를 곱한 값을 반환합니다
+  """
+  def product([]), do: 1
+  def product([h | t]), do: h * product(t)
+
+  @doc """
+    reduce/2 모든 요소에 함수를 적용하여 나온값을 누산하여 반환합니다.
+  """
+
+  def reduce([], acc, _fun), do: acc
+  def reduce([h | t], acc, fun), do: reduce(t, fun.(h, acc), fun)
+
+  @doc """
+    reduce_while/3 함수의 결과가 fun {:halt, acc}를 반환하면 더이상 순회를 하지않고 누산된 결과를 반환합니다.
+    { :cont, acc }를 반환하면 계속해서 누산을 진행합니다.
+    더 이상 요소가 존재하지 않거나 리스트가 비어있으면 acc를 반환합니다.
+  """
+
+  def reduce_while([], acc, _fun), do: acc
+
+  def reduce_while([h | t], acc, fun) do
+    case fun.(h, acc) do
+      {:cont, new_acc} -> reduce_while(t, new_acc, fun)
+      {:halt, new_acc} -> new_acc
+    end
+  end
+
+  @doc """
+    reject/2 함수의 결과로 false 값을 반환하는 요소들만 리스트로 반환합니다.
+  """
+  def reject([], _fun), do: []
+
+  def reject([h | t], fun) do
+    case fun.(h) do
+      true -> reject(t, fun)
+      false -> [h] ++ reject(t, fun)
+    end
+  end
+
+  @doc """
+    reverse_slice/3 리스트에서 start_index 부터 시작하여 count 만큼 요소를 반대로 뒤집은 리스트를 반환합니다.
+  """
+
+  def reverse_slice(list, start_index, count), do: reverse_slice(list, start_index, count, [], [])
+
+  defp reverse_slice([], _start_index, _count, result, reverse_result),
+    do: result ++ reverse_result
+
+  defp reverse_slice([h | t], _start_index, 0, result, _reverse_result),
+    do: reverse_slice(t, 0, 0, result ++ [h], [])
+
+  defp reverse_slice([h | t], 0, 1, result, reverse_result),
+    do: reverse_slice(t, 0, 1, result ++ [h] ++ reverse_result, [])
+
+  defp reverse_slice([h | t], 0, count, result, reverse_result),
+    do: reverse_slice(t, 0, count - 1, result, [h] ++ reverse_result)
+
+  defp reverse_slice([h | t], start_index, count, result, reverse_result),
+    do: reverse_slice(t, start_index - 1, count, result ++ [h], reverse_result)
+
+  @doc """
+    scan/2 주어진 함수를 각 요소에 적용하여 나온 결과를 리스트 순차별로 저장하고 다음 계산을 위한 누산기로 전달합니다.
+    scan/3 주어진 함수를 각 요소에 적용하고 결과를 목록에 저장하고 다음 계산을 위한 누산기를 acc로 시작 값으로 사용합니다.
+  """
+
+  def scan([], _fun), do: []
+  def scan([h | t], fun), do: [h] ++ scan(t, h, fun)
+  def scan([], _acc, _fun), do: []
+
+  def scan([h | t], acc, fun) do
+    new_acc = fun.(h, acc)
+    [new_acc] ++ scan(t, new_acc, fun)
+  end
+
+  @doc """
+    slice/2 주어진 리스트에서 index_range만큼 잘라낸 값들을 반환합니다.
+    주어진 index_range에서의 범위는 zero_base로 index 부터 range까지입니다.
+    ex) [1,2,3,4,5] , 2..3 => 2번째 인덱스인 3부터 4까지인 [3, 4]를 반환
+
+    index는 정규화되어 만약 음수가 주어진다면 요소의 마지막부터 잘라내기를 시작합니다.
+    이때는 zero_base가 아닌 -1이 마지막 요소를 가르킵니다.
+    ex) [1,2,3,4,5] => -1 은 5 , -2 는 4 , -3은 3, -4는 2, -5는 1
+    ex) [1,2,3,4,5], -4..-3 =>  [2, 3]를 반환
+
+    index_range.first가 요소 범위보다 크면 []를 반환합니다.
+    ex) [1,2,3,4,5], 5..10 => []를 반환
+
+    index_range.last가 요소 범위보다 크면 해당하는 요소까지만 반환합니다.
+    ex) [1,2,3,4,5], 2..20 => [3, 4, 5]를 반환
+
+    ========================================================================
+
+    slice/3 리스트에서 start_index (zero_base)부터 시작하여 amount 갯수만큼 요소를 잘라내어 반환합니다.
+    amount의 개수가 요소보다 많으면 더 이상 요소를 가져올수 없을만큼 최대한 잘라냅니다.
+
+    start_index가 음수로 주어지게 되면 리스트의 마지막부터 잘라내기를 시작합니다.
+    ex) [1,2,3,4,5], -1 ,2 => 4,5
+
+    amount가 0 이거나 start_index가 요소의 범위를 벗어났을경우 []를 반환합니다.
+  """
+
+  def slice(list, first..last), do: slice(list, first, last - first + 1)
+
+  def slice([], _start_index, _amount), do: []
+  def slice([_h | _t], _start_index, 0), do: []
+  def slice([h | _t], 0, 0), do: [h]
+  def slice([h | t], 0, amount), do: [h] ++ slice(t, 0, amount - 1)
+
+  def slice(list, start_index, amount) when start_index < 0 do
+    new_start_index = -start_index - amount
+
+    case new_start_index >= 0 do
+      true ->
+        MyEnum.reverse(list)
+        |> slice(new_start_index, amount)
+        |> MyEnum.reverse()
+
+      false ->
+        MyEnum.reverse(list)
+        |> slice(0, -start_index)
+        |> MyEnum.reverse()
+    end
+  end
+
+  def slice([_h | t], start_index, amount), do: slice(t, start_index - 1, amount)
+
+  @doc """
+    split/2 요소를 count 만큼 {left, right}로 나눕니다.
+    count가 양수일때는 왼쪽에 남겨질 요소의 개수를 뜻하고
+    count가 음수일때는 오른쪽에 남겨질 요소의 개수를 뜻합니다.
+
+    ex ) Enum.split([1, 2, 3], 2) => {[1, 2], [3]}
+    ex ) Enum.split([1, 2, 3],-2) => {[1], [2, 3]}
+  """
+
+  def split(list, count) when count < 0 do
+    reverse_list = reverse(list)
+    {left, right} = split(reverse_list, count * -1)
+    {reverse(right), reverse(left)}
+  end
+
+  def split(list, count), do: split(list, count, [])
+
+  defp split([], _count, result), do: {result, []}
+  defp split([h | t], 0, result), do: {result, [h] ++ t}
+  defp split([h | t], count, result), do: split(t, count - 1, result ++ [h])
+
+  @doc """
+    split_while/2 function에 true 값을 반환하는 요소를 left에 넣다가 false 값 ( false 또는 nil )을 반환하는 요소를 만날시부터
+    right에 값을 넣어 반환합니다.
+    ex ) Enum.split_while([1,2,3,4], fn x -> x < 3 end ) => {[1, 2], [3, 4]}
+  """
+
+  def split_while(list, fun), do: split_while(list, fun, [])
+  defp split_while([], _fun, left_result), do: {left_result, []}
+
+  defp split_while([h | t], fun, left_result) do
+    case fun.(h) do
+      true -> split_while(t, fun, left_result ++ [h])
+      _ -> {left_result, [h] ++ t}
+    end
+  end
+
+  @doc """
+    split_with/2 모든 요소를 순회하며 함수에 true 값을 반환하는 요소는 left에 함수에 false 값 ( false , nil )을 반환하는 요소는 right에 넣습니다.
+
+    반환하는 튜플인 {left, right}의 각 left, right에 요소들은 기존에 제공한 요소의 순서와 동일한 순서로 적재됩니다.
+    ex ) split_with([1,5,4,2,3], fn x -> rem(x,2) == 0 end)
+    => {[2, 4], [1, 3, 5]} ( X ) 순서가 정렬되지 않는다.
+    => {[4, 2], [1, 5, 3]} ( O ) 처음 제공한 순서대로 반환됩니다.
+  """
+
+  def split_with(map, fun) when is_map(map), do: split_with(Enum.to_list(map), fun, [], [])
+  def split_with(list, fun), do: split_with(list, fun, [], [])
+  defp split_with([], _fun, left, right), do: {left, right}
+
+  defp split_with([h | t], fun, left, right) do
+    case fun.(h) do
+      true -> split_with(t, fun, left ++ [h], right)
+      _ -> split_with(t, fun, left, right ++ [h])
+    end
+  end
+
+  @doc """
+    sum/1 모든 요소의 합계를 반환합니다. 요소가 숫자가 아니면 ArithmeticError를 발생시킵니다.
+  """
+  def sum([]), do: 0
+
+  def sum([h | _t]) when is_number(h) == false,
+    do: raise(ArithmeticError.exception("It's not number"))
+
+  def sum([h | t]), do: h + sum(t)
+
+  @doc """
+    take/2 주어진 요소에서 amount 만큼의 요소를 반환합니다.
+    amount가 음수의 경우에 요소의 끝에서부터 가져옵니다.
+  """
+
+  def take([], _amount), do: []
+  def take([_h | _t], 0), do: []
+
+  def take(list, amount) when amount < 0 do
+    reverse(list)
+    |> take(amount * -1)
+    |> reverse()
+  end
+
+  def take([h | t], amount), do: [h] ++ take(t, amount - 1)
+
+  @doc """
+    take_every/2 주어진 요소에서 nth간격 만큼 요소를 가져옵니다.
+    nth가 0이 아닐때 첫 번째 요소는 항상 포함됩니다.
+    nth는 음이 아닌 정수여야합니다.
+  """
+
+  def take_every([], _nth), do: []
+  def take_every(_list, 0), do: []
+  def take_every([h | t], nth), do: [h] ++ take_every(t, nth, nth - 1)
+  defp take_every([], _nth, _depth), do: []
+  defp take_every([h | t], nth, 0), do: [h] ++ take_every(t, nth, nth - 1)
+  defp take_every([_h | t], nth, depth), do: take_every(t, nth, depth - 1)
+
+  @doc """
+    take_while/2 요소에서 fun를 호출하여 false가 나오기 전까지의 요소들을 반환합니다.
+  """
+  def take_while([], _fun), do: []
+
+  def take_while([h | t], fun) do
+    case fun.(h) do
+      true -> [h] ++ take_while(t, fun)
+      _ -> []
+    end
+  end
+
+  @doc """
+    uniq/1 모든 요소에서 중복 요소를 제거하여 반환합니다.
+  """
+
+  def uniq([]), do: []
+
+  def uniq([h | t]) do
+    [h] ++ uniq(reject(t, fn x -> x === h end))
+  end
+
+  @doc """
+    uniq_by/2 요소를 순회하며 함수의 호출결과로 나온 결과가 중복되는 요소를 제거하여 반환합니다.
+    각 요소의 첫 번째 항목이 유지됩니다.
+  """
+
+  def uniq_by([], _fun), do: []
+
+  def uniq_by([h | t], fun) do
+    [h] ++ uniq_by(reject(t, fn x -> fun.(x) === fun.(h) end), fun)
+  end
+
+  @doc """
+    unzip/1 zip/2의 반대 함수로 주어진 튜플에서 2개의 요소를 추출하여 각각 left list와 rigth list에 넣어 반환합니다.
+    이 함수는 각 튜플에 대해서 두 개의 요소가 있는 enumerable 튜플 목록으로 변환될 수 없으면 실패합니다.
+  """
+
+  def unzip(map) when is_map(map), do: unzip(Enum.to_list(map), [], [])
+  def unzip(list), do: unzip(list, [], [])
+  defp unzip([], left, right), do: {left, right}
+
+  defp unzip([h | t], left, right) do
+    {tuple_left, tuple_right} = h
+    unzip(t, left ++ [tuple_left], right ++ [tuple_right])
+  end
+
+  @doc """
+    with_index/2 각 요소들을 인덱스와 함께 튜플에 래핑된 각 요소를 반환합니다.
+    fun_or_offset에 함수 또는 정수 오프셋을 받을 수 있습니다.
+    fun_or_offset에 값이 주어지지 않은 경우 default 값으로 0으로 래핑하여 반환합니다.
+    fun 이 주어질경우 인덱스는 0으로 시작하여 함수의 호출값으로 래핑하여 반환합니다.
+  """
+
+  def with_index(list, fun_or_offset \\ 0)
+  def with_index(list, fun_or_offset), do: with_index(list, fun_or_offset, [])
+  defp with_index([], _offset, result), do: result
+
+  defp with_index([h | t], offset, result) when is_number(offset),
+    do: with_index(t, offset + 1, result ++ [{h, offset}])
+
+  defp with_index(list, fun, result) when is_function(fun), do: with_index(list, fun, result, 0)
+  defp with_index([], _fun, result, _offset), do: result
+
+  defp with_index([h | t], fun, result, offset),
+    do: with_index(t, fun, result ++ [fun.(h, offset)], offset + 1)
 end
