@@ -1333,7 +1333,8 @@ defmodule MyEnumTest do
 
     # 기존 함수인 Enum.sort_by 로는 ["monster", "some", "kind", "of"] 결과를 얻습니다.
     test "매핑함수와 :desc를 전달하여 내림차순으로 정렬된 결과를 반환합니다." do
-      assert ["monster","kind","some","of"] == MyEnum.sort_by(["some","kind","of","monster"], &byte_size/1, :desc)
+      assert ["monster", "kind", "some", "of"] ==
+               MyEnum.sort_by(["some", "kind", "of", "monster"], &byte_size/1, :desc)
     end
   end
 end

@@ -1132,7 +1132,7 @@ defmodule MyEnum do
   defp do_swap([h | t], first) do
     cond do
       h === first -> {:next, []}
-      (h < first) -> {:swap, [h] ++ [first] ++ t}
+      h < first -> {:swap, [h] ++ [first] ++ t}
       !(h < first) -> {:next, []}
     end
   end
