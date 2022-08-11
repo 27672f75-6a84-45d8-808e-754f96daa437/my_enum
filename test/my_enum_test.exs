@@ -1255,4 +1255,86 @@ defmodule MyEnumTest do
                MyEnum.with_index([:a, :b, :c], fn element, index -> {index, element} end)
     end
   end
+
+  describe "MyEnum.sort/1 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.sort([])
+    end
+
+    test "모든 요소를 Erlang의 용어 순서에 따라 정렬합니다." do
+      assert [1, 2, 3, 4, 5] == MyEnum.sort([3, 2, 4, 5, 1])
+    end
+
+    test "모든 요소를 Erlang의 용어 순서에 따라 정렬합니다.2" do
+      assert ["a", "b", "c", "d", "e"] == MyEnum.sort(["b", "c", "d", "e", "a"])
+    end
+
+    test "모든 요소를 Erlang의 용어 순서에 따라 정렬합니다.3" do
+      assert [1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5] ==
+               MyEnum.sort([1, 3, 3, 4, 5, 5, 2, 1, 4, 4, 2, 1, 3])
+    end
+  end
+
+  describe "MyEnum.sort/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.sort([], fn x -> x end)
+    end
+
+    test "함수를 적용한 요소를 결과에 따라 정렬합니다." do
+      assert ["of", "some", "kind", "monster"] ==
+               MyEnum.sort(["some", "kind", "of", "monster"], &(byte_size(&1) <= byte_size(&2)))
+    end
+
+    test "함수로 :asc을 제공하여 오름차순으로 정렬합니다." do
+      assert [1, 2, 3] == MyEnum.sort([2, 3, 1], :asc)
+    end
+
+    test "함수로 :desc을 제공하여 내림차순으로 정렬합니다." do
+      assert [3, 2, 1] == MyEnum.sort([2, 3, 1], :desc)
+    end
+
+    test "구조체를 오름차순으로 정렬합니다." do
+      assert [~D[2019-01-01], ~D[2019-06-06], ~D[2020-03-02]] ==
+               MyEnum.sort([~D[2019-01-01], ~D[2020-03-02], ~D[2019-06-06]], {:asc, Date})
+    end
+
+    test "구조체를 내림차순으로 정렬합니다." do
+      assert [~D[2020-03-02], ~D[2019-06-06], ~D[2019-01-01]] ==
+               MyEnum.sort([~D[2019-01-01], ~D[2020-03-02], ~D[2019-06-06]], {:desc, Date})
+    end
+  end
+
+  describe "MyEnum.sort_by/3 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.sort_by([], fn x -> x * 2 end)
+    end
+
+    test "매핑함수를 적용한 결과를 sorter로 비교하여 정렬된 결과를 반환합니다." do
+      assert [5, 4, 3, 2, 1] == MyEnum.sort_by([1, 4, 3, 2, 5], fn x -> -x end)
+    end
+
+    test "매핑함수를 적용한 결과를 sorter로 비교하여 정렬된 결과를 반환합니다.2" do
+      assert ["of", "some", "kind", "monster"] ==
+               MyEnum.sort_by(["some", "kind", "of", "monster"], &byte_size/1)
+    end
+
+    test "매핑함수를 적용한 결과를 sorter로 비교하여 정렬된 결과를 반환합니다.3" do
+      assert ["of", "kind", "some", "monster"] ==
+               MyEnum.sort_by(
+                 ["some", "kind", "of", "monster"],
+                 &{byte_size(&1), String.first(&1)}
+               )
+    end
+
+    test "매핑함수를 적용한 결과를 sorter로 비교하여 정렬된 결과를 반환합니다.4" do
+      assert ["monster", "some", "kind", "of"] ==
+               MyEnum.sort_by(["some", "kind", "of", "monster"], &byte_size/1, &>=/2)
+    end
+
+    # 기존 함수인 Enum.sort_by 로는 ["monster", "some", "kind", "of"] 결과를 얻습니다.
+    test "매핑함수와 :desc를 전달하여 내림차순으로 정렬된 결과를 반환합니다." do
+      assert ["monster", "kind", "some", "of"] ==
+               MyEnum.sort_by(["some", "kind", "of", "monster"], &byte_size/1, :desc)
+    end
+  end
 end
