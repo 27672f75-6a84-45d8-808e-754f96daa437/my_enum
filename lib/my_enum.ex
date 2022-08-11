@@ -1083,139 +1083,72 @@ defmodule MyEnum do
     do: with_index(t, fun, result ++ [fun.(h, offset)], offset + 1)
 
   @doc """
-    sort/1 리스트를 Erlang의 용어 순서에 따라 정렬합니다.
+      sort/1 리스트를 Erlang의 용어 순서에 따라 정렬합니다.
     이 함수는 병합 정렬 알고리즘을 사용합니다.
     이 함수를 사용하여 구조체를 정렬하면 안됨
-  """
 
-  def sort([]), do: []
+    =========================================================================
 
-  def sort(list) do
-    do_sort_by_count(list, length(list))
-  end
-
-  defp do_sort_by_count(list, 0), do: list
-
-  defp do_sort_by_count(list, count) do
-    sorted_list = do_sort(list)
-    do_sort_by_count(sorted_list, count - 1)
-  end
-
-  defp do_sort([]), do: []
-
-  defp do_sort([h | t]) do
-    {result, swap_list} = do_swap(t, h)
-
-    case result do
-      :swap ->
-        [sh | st] = swap_list
-        [sh] ++ do_sort(st)
-
-      :next ->
-        [h] ++ do_sort(t)
-    end
-  end
-
-  defp do_swap([], _first), do: {:next, []}
-
-  defp do_swap([h | t], first) when is_tuple(h) and tuple_size(h) == 2 do
-    {_element, mapping_element} = h
-    {_element_first, mapping_element_first} = first
-
-    cond do
-      mapping_element === mapping_element_first -> {:next, []}
-      mapping_element < mapping_element_first -> {:swap, [h] ++ [first] ++ t}
-      !(mapping_element < mapping_element_first) -> {:next, []}
-    end
-  end
-
-  defp do_swap([h | t], first) do
-    cond do
-      h === first -> {:next, []}
-      h < first -> {:swap, [h] ++ [first] ++ t}
-      !(h < first) -> {:next, []}
-    end
-  end
-
-  @doc """
     sort/2 함수는 인자를 2개를 가진 비교 함수를 제공해야하며 제공된 비교 함수를 통해
     true 값이 나온 인자를 앞으로 false 값이 나온 인자를 뒤로 보내 정렬합니다.
     주어진 함수로 인자를 비교할 때 같은 값이 나올수가 있는데 주어진 함수에서 같은 값에 대한 처리를 하지않으면
     정렬이 안정적이지 않고 용어의 순서가 뒤섞일 수 있습니다.
 
     함수 부분에 {:asc, module}과 같이 제공하여 구조체를 정렬 할수있습니다.
+
+    ========================================================================
+
+    sort_by/3 제공된 함수 호출 결과로 매핑된 요소의 결과를 sorter로 비교해 리스트를 정렬합니다.
+    sorter 는 default 값으로 &<=/2 입니다.
   """
+  def sort(list, sorter \\ :asc), do: sort_by(list, & &1, sorter)
+  def sort_by(list, mapper, sorter \\ &<=/2)
+  def sort_by([], _mapper, _sorter), do: []
+  def sort_by(list, mapper, :asc), do: sort_by(list, mapper)
+  def sort_by(list, mapper, :desc), do: sort_by(list, mapper) |> reverse()
 
-  def sort([], _fun), do: []
-  def sort(list, :asc), do: sort(list)
-  def sort(list, :desc), do: sort(list) |> reverse()
-  def sort(list, {:asc, module}), do: sort(list, module)
-  def sort(list, {:desc, module}), do: sort(list, module) |> reverse()
-  def sort(list, fun), do: do_sort_by_count(list, fun, length(list))
+  def sort_by(list, mapper, module) when is_atom(module),
+    do: sort_by(list, mapper, &(module.compare(&1, &2) != :gt))
 
-  defp do_sort_by_count(list, _fun, 0), do: list
+  def sort_by(list, mapper, {:asc, module}),
+    do: sort_by(list, mapper, &(module.compare(&1, &2) != :gt))
 
-  defp do_sort_by_count(list, fun, count) do
-    sorted_list = do_sort(list, fun)
-    do_sort_by_count(sorted_list, fun, count - 1)
+  def sort_by(list, mapper, {:desc, module}),
+    do: sort_by(list, mapper, &(module.compare(&1, &2) != :gt)) |> reverse()
+
+  def sort_by(list, mapper, sorter) do
+    do_sort_by_count(list, sorter, length(list), mapper)
   end
 
-  defp do_sort([], _fun), do: []
+  defp do_sort_by_count(list, _sorter, 0, _mapper), do: list
 
-  defp do_sort([h | t], fun) do
-    {result, swap_list} = do_swap(t, h, fun)
+  defp do_sort_by_count(list, sorter, count, mapper) do
+    sorted_list = do_sort(list, sorter, mapper)
+    do_sort_by_count(sorted_list, sorter, count - 1, mapper)
+  end
+
+  defp do_sort([], _sorter, _mapper), do: []
+
+  defp do_sort([h | t], sorter, mapper) do
+    {result, swap_list} = do_swap(t, h, sorter, mapper)
 
     case result do
       :swap ->
         [sh | st] = swap_list
-        [sh] ++ do_sort(st, fun)
+        [sh] ++ do_sort(st, sorter, mapper)
 
       :next ->
-        [h] ++ do_sort(t, fun)
+        [h] ++ do_sort(t, sorter, mapper)
     end
   end
 
-  defp do_swap([], _first, _fun), do: {:next, []}
+  defp do_swap([], _first, _sorter, _mapper), do: {:next, []}
 
-  defp do_swap([h | t], first, module) when is_atom(module) do
-    case module.compare(h, first) do
-      :gt -> {:next, []}
-      :lt -> {:swap, [h] ++ [first] ++ t}
-      :eq -> {:next, []}
-    end
-  end
-
-  defp do_swap([h | t], first, fun) when is_tuple(h) and tuple_size(h) == 2 do
-    {_element, mapping_element} = h
-    {_element_first, mapping_element_first} = first
-
+  defp do_swap([h | t], first, sorter, mapper) do
     cond do
-      mapping_element === mapping_element_first -> {:next, []}
-      fun.(mapping_element, mapping_element_first) -> {:swap, [h] ++ [first] ++ t}
-      !fun.(mapping_element, mapping_element_first) -> {:next, []}
+      mapper.(h) === mapper.(first) -> {:next, []}
+      sorter.(mapper.(h), mapper.(first)) -> {:swap, [h] ++ [first] ++ t}
+      !sorter.(mapper.(h), mapper.(first)) -> {:next, []}
     end
-  end
-
-  defp do_swap([h | t], first, fun) do
-    cond do
-      h === first -> {:next, []}
-      fun.(h, first) -> {:swap, [h] ++ [first] ++ t}
-      !fun.(h, first) -> {:next, []}
-    end
-  end
-
-  @doc """
-    sort_by/3 제공된 함수 호출 결과로 매핑된 요소의 결과를 sorter로 비교해 리스트를 정렬합니다.
-    sorter 는 default 값으로 &<=/2 입니다.
-  """
-
-  def sort_by(list, mapper, sorter \\ &<=/2)
-  def sort_by([], _mapper, _sorter), do: []
-
-  def sort_by(list, mapper, sorter) do
-    mapping_list = map(list, mapper)
-    zip_list = Enum.zip(list, mapping_list)
-    sorted_mapping_list = sort(zip_list, sorter)
-    map(sorted_mapping_list, fn {element, _mapping_element} -> element end)
   end
 end
