@@ -9,8 +9,6 @@
 -   random/1
 -   shuffle/1
 -   slide/3
--   sort/1
--   sort/2
--   sort_by/3
 -   take_random/2
 -   to_list
+-   zip_reduce

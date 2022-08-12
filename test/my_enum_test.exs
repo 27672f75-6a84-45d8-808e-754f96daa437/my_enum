@@ -1337,4 +1337,70 @@ defmodule MyEnumTest do
                MyEnum.sort_by(["some", "kind", "of", "monster"], &byte_size/1, :desc)
     end
   end
+
+  describe "MyEnum.zip/1 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.zip([])
+    end
+
+    test "제공한 리스트안에 있는 요소들을 하나씩 뽑아와 하나의 튜플로 압축하여 반환합니다." do
+      assert [{1, :a, "foo"}, {2, :b, "bar"}, {3, :c, "baz"}] ==
+               MyEnum.zip([[1, 2, 3], [:a, :b, :c], ["foo", "bar", "baz"]])
+    end
+
+    test "제공한 리스트안에 있는 요소들을 하나씩 뽑아와 하나의 튜플로 압축하여 반환합니다.2" do
+      assert [{1, :a}, {2, :b}, {3, :c}] == MyEnum.zip([1, 2, 3], [:a, :b, :c])
+    end
+  end
+
+  describe "MyEnum.zip/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.zip([], [1, 2, 3])
+    end
+
+    test "두개의 리스트를 압축하여 하나의 튜플로 반환합니다." do
+      assert [{1, :a}, {2, :b}, {3, :c}] == MyEnum.zip([1, 2, 3], [:a, :b, :c])
+    end
+
+    test "두개의 리스트를 압축하여 하나의 튜플로 반환합니다.2" do
+      assert [{1, :a}, {2, :b}, {3, :c}] == MyEnum.zip([1, 2, 3, 4, 5], [:a, :b, :c])
+    end
+
+    test "두개의 리스트를 압축하여 하나의 튜플로 반환합니다.3" do
+      assert [{{2, 3}, {5, 6}}, {{:a, 1}, {:b, 3}}] ==
+               MyEnum.zip([%{:a => 1, 2 => 3, :c => 8}, %{:b => 3, 5 => 6}])
+    end
+  end
+
+  describe "MyEnum/zip_with/2 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.zip_with([], fn x -> x end)
+    end
+
+    test "제공한 리스트안에 요소들을 하나씩 뽑아와 압축한 결과를 하나마다 함수를 적용하여 반환합니다." do
+      assert [9, 12] == MyEnum.zip_with([[1, 2], [3, 4], [5, 6]], fn [x, y, z] -> x + y + z end)
+    end
+
+    test "제공한 리스트안에 요소들을 하나씩 뽑아와 압축한 결과를 하나마다 함수를 적용하여 반환합니다.2" do
+      assert [4, 6] == MyEnum.zip_with([[1, 2], [3, 4]], fn [x, y] -> x + y end)
+    end
+  end
+
+  describe "MyEnum/zip_with/3 tests" do
+    test "제공한 리스트가 비어있다면 []를 반환합니다." do
+      assert [] == MyEnum.zip_with([], [], fn x -> x end)
+    end
+
+    test "제공한 두개의 리스트를 압축하여 함수 적용 결과를 반환합니다." do
+      assert [4, 6] == MyEnum.zip_with([1, 2], [3, 4], fn [x, y] -> x + y end)
+    end
+
+    test "제공한 두개의 리스트를 압축하여 함수 적용 결과를 반환합니다.2" do
+      assert [4, 6] == MyEnum.zip_with([1, 2], [3, 4, 5, 6], fn [x, y] -> x + y end)
+    end
+
+    test "제공한 두개의 리스트를 압축하여 함수 적용 결과를 반환합니다.3" do
+      assert [4, 6] == MyEnum.zip_with([1, 2, 5, 6], [3, 4], fn [x, y] -> x + y end)
+    end
+  end
 end
