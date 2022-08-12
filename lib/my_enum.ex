@@ -1151,4 +1151,41 @@ defmodule MyEnum do
       !sorter.(mapper.(h), mapper.(first)) -> {:next, []}
     end
   end
+
+  @doc """
+    zip/1 열거 가능한 컬렉션의 요소를 튜플 목록으로 압축합니다.
+    주어진 컬렉션의 열거 가능한 항목이 더이상 없을 때 압축한 목록을 바로 반환합니다.
+    ex ) Enum.zip([[1, 2, 3, 4, 5], [:a, :b, :c]]) => [{1, :a}, {2, :b}, {3, :c}]
+
+    zip/2 열거 가능한 컬렉션 2개를 하나의 튜플 목록으로 압축합니다.
+  """
+
+  def zip(list, zip_fun \\ fn x -> List.to_tuple(x) end)
+  def zip(list1, list2) when is_list(list2), do: zip([list1, list2])
+  def zip(list, zip_fun), do: zip_with(list, zip_fun)
+  def zip_with(list1, list2, zip_fun), do: zip_with([list1, list2], zip_fun)
+  def zip_with([], _zip_fun), do: []
+
+  def zip_with([h | t], zip_fun) when is_list(h) do
+    min_list = Enum.min_by([h | t], fn x -> length(x) end)
+    min_length = length(min_list)
+
+    do_zip_by_count([h | t], min_length, zip_fun)
+  end
+
+  def zip_with(enumerable, zip_fun),
+    do: zip_with(Enum.map(enumerable, fn x -> Enum.to_list(x) end), zip_fun)
+
+  defp do_zip_by_count(_list, 0, _zip_fun), do: []
+
+  defp do_zip_by_count(list, count, zip_fun) do
+    {first_zip, second_zip} = do_zip(list, [], [])
+    [zip_fun.(first_zip)] ++ do_zip_by_count(second_zip, count - 1, zip_fun)
+  end
+
+  defp do_zip([], first_zip, second_zip), do: {first_zip, second_zip}
+
+  defp do_zip([[h1 | t1] | t], first_zip, second_zip) do
+    do_zip(t, first_zip ++ [h1], second_zip ++ [t1])
+  end
 end
