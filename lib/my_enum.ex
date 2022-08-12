@@ -1167,14 +1167,14 @@ defmodule MyEnum do
   def zip_with([], _zip_fun), do: []
 
   def zip_with([h | t], zip_fun) when is_list(h) do
-    min_list = Enum.min_by([h | t], fn x -> length(x) end)
+    min_list = min_by([h | t], fn x -> length(x) end)
     min_length = length(min_list)
 
     do_zip_by_count([h | t], min_length, zip_fun)
   end
 
   def zip_with(enumerable, zip_fun),
-    do: zip_with(Enum.map(enumerable, fn x -> Enum.to_list(x) end), zip_fun)
+    do: zip_with(map(enumerable, fn x -> Enum.to_list(x) end), zip_fun)
 
   defp do_zip_by_count(_list, 0, _zip_fun), do: []
 
